@@ -8,14 +8,13 @@ import com.cleanup.todoc.DB.TodocDatabase;
 import com.cleanup.todoc.model.DAOs.ProjectDao;
 import com.cleanup.todoc.model.entities.Project;
 
-import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 public class ProjectRepository {
 
     private final ProjectDao projectDao;
-    private LiveData<List<Project>> allProjects;
+    private LiveData<Project[]> allProjects;
     private final Executor doInBackground;
 
     public ProjectRepository(Application application) {
@@ -25,19 +24,19 @@ public class ProjectRepository {
         doInBackground = Executors.newFixedThreadPool(2);
     }
 
-    void insert(Project project) {
+    public void insert(Project project) {
         doInBackground.execute(() -> projectDao.insert(project));
     }
 
-    void delete(Project project) {
+    public void delete(Project project) {
         doInBackground.execute(() -> projectDao.delete(project));
     }
 
-    public LiveData<List<Project>> getAllProjects() {
+    public LiveData<Project[]> getAllProjects() {
         return allProjects;
     }
 
-    Project getProjectById(long givenId) {
+    public Project getProjectById(long givenId) {
         return projectDao.getProjectById(givenId);
     }
 }

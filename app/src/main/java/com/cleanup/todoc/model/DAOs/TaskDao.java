@@ -8,6 +8,7 @@ import androidx.room.Query;
 
 import com.cleanup.todoc.model.entities.Task;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Dao
@@ -20,7 +21,7 @@ public interface TaskDao {
     void delete(Task task);
 
     @Query("SELECT * FROM task_table ORDER BY creation_timestamp ASC")
-    LiveData<List<Task>> getAllTasksOld();
+    LiveData<ArrayList<Task>> getAllTasks();
 
     @Query("SELECT * FROM task_table ORDER BY projectId DESC")
     LiveData<List<Task>> getAllTasksProjectAZ();

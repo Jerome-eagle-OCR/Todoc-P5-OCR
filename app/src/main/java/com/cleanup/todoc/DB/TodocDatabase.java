@@ -17,9 +17,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.Executors;
 
-@Database(entities = {Project.class, Task.class}, version = 1)
+@Database(entities = {Project.class, Task.class}, exportSchema = false, version = 1)
 public abstract class TodocDatabase extends RoomDatabase {
-
+    public static final String DB_NAME = "todoc_database";
     private static TodocDatabase instance;
 
     public abstract ProjectDao projectDao();
@@ -29,7 +29,7 @@ public abstract class TodocDatabase extends RoomDatabase {
 
     public static synchronized TodocDatabase getInstance(Context context) {
         if (instance == null) {
-            instance = Room.databaseBuilder(context.getApplicationContext(), TodocDatabase.class, "todoc_database")
+            instance = Room.databaseBuilder(context.getApplicationContext(), TodocDatabase.class, DB_NAME)
                     .fallbackToDestructiveMigration()
                     .addCallback(roomCallback)
                     .build();
@@ -46,7 +46,7 @@ public abstract class TodocDatabase extends RoomDatabase {
     };
 
     private static void populateProjectsInDb() {
-        Executors.newFixedThreadPool(2).execute(() -> {
+        Executors.newFixedThreadPool(3).execute(() -> {
             instance.projectDao().insert(new Project("Projet Tartampion", 0xFFEADAD1));
             instance.projectDao().insert(new Project("Projet Lucidia", 0xFFB4CDBA));
             instance.projectDao().insert(new Project("Projet Circus", 0xFFA3CED2));

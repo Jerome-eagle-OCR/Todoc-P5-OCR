@@ -20,7 +20,7 @@ public interface ProjectDao {
     void delete(Project project);
 
     @Query("SELECT * FROM project_table ORDER BY id")
-    LiveData<List<Project>> getProjects();
+    LiveData<Project[]> getProjects();
 
     @Query("SELECT * FROM project_table WHERE id = :givenId")
     Project getProjectById(long givenId);
