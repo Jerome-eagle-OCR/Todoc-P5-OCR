@@ -7,7 +7,6 @@ import androidx.lifecycle.ViewModelProvider;
 import com.cleanup.todoc.model.repositories.ProjectRepository;
 import com.cleanup.todoc.model.repositories.TaskRepository;
 import com.cleanup.todoc.ui.MainViewModel;
-import com.cleanup.todoc.utils.TodocApplication;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -20,8 +19,8 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
             synchronized (ViewModelFactory.class) {
                 if (factory == null) {
                     factory = new ViewModelFactory(
-                            new ProjectRepository(TodocApplication.getInstance()),
-                            new TaskRepository(TodocApplication.getInstance())
+                            TodocApplication.sDependencyContainer.projectRepository,
+                            TodocApplication.sDependencyContainer.taskRepository
                     );
                 }
             }

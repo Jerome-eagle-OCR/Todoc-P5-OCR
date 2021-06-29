@@ -11,19 +11,15 @@
         app:showAsAction="ifRoom">
         <menu>
             <item
-                android:id="@+id/filter_alphabetical"
-                android:title="@string/sort_alphabetical"
+                android:id="@+id/sort_by_project"
+                android:title="@string/sort_by_project"
                 app:showAsAction="never|withText" />
             <item
-                android:id="@+id/filter_alphabetical_inverted"
-                android:title="@string/sort_alphabetical_invert"
-                app:showAsAction="never|withText" />
-            <item
-                android:id="@+id/filter_oldest_first"
+                android:id="@+id/sort_oldest_first"
                 android:title="@string/sort_oldest_first"
                 app:showAsAction="never|withText" />
             <item
-                android:id="@+id/filter_recent_first"
+                android:id="@+id/sort_recent_first"
                 android:title="@string/sort_recent_first"
                 app:showAsAction="never|withText" />
         </menu>

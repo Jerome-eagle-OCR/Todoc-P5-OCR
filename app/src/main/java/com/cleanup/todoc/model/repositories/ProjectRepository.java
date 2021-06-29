@@ -1,35 +1,32 @@
 package com.cleanup.todoc.model.repositories;
 
-import android.app.Application;
-
 import androidx.lifecycle.LiveData;
 
-import com.cleanup.todoc.DB.TodocDatabase;
 import com.cleanup.todoc.model.DAOs.ProjectDao;
 import com.cleanup.todoc.model.entities.Project;
 
+import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 public class ProjectRepository {
 
-    private final ProjectDao projectDao;
-    private LiveData<Project[]> allProjects;
+    private final ProjectDao mProjectDao;
+    private final LiveData<Project[]> allProjects;
     private final Executor doInBackground;
 
-    public ProjectRepository(Application application) {
-        TodocDatabase database = TodocDatabase.getInstance(application);
-        projectDao = database.projectDao();
-        allProjects = projectDao.getProjects();
+    public ProjectRepository(ProjectDao projectDao) {
+        mProjectDao = projectDao;
+        allProjects = mProjectDao.getProjects();
         doInBackground = Executors.newFixedThreadPool(2);
     }
 
     public void insert(Project project) {
-        doInBackground.execute(() -> projectDao.insert(project));
+        doInBackground.execute(() -> mProjectDao.insert(project));
     }
 
     public void delete(Project project) {
-        doInBackground.execute(() -> projectDao.delete(project));
+        doInBackground.execute(() -> mProjectDao.delete(project));
     }
 
     public LiveData<Project[]> getAllProjects() {
@@ -37,6 +34,10 @@ public class ProjectRepository {
     }
 
     public Project getProjectById(long givenId) {
-        return projectDao.getProjectById(givenId);
+        Project[] projects = allProjects.getValue();
+        for (Project project : Objects.requireNonNull(projects)) {
+            if (project.getId() == givenId) return project;
+        }
+        return null;
     }
 }

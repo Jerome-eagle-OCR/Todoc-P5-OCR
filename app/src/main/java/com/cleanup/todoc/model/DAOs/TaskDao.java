@@ -21,11 +21,11 @@ public interface TaskDao {
     void delete(Task task);
 
     @Query("SELECT * FROM task_table ORDER BY creation_timestamp ASC")
-    LiveData<ArrayList<Task>> getAllTasks();
+    LiveData<List<Task>> getAllTasksOldNew();
 
     @Query("SELECT * FROM task_table ORDER BY projectId DESC")
-    LiveData<List<Task>> getAllTasksProjectAZ();
-
+    LiveData<List<Task>> getAllTasksProjectSorting();
+/*
     @Query("SELECT * FROM task_table WHERE projectId = :givenProjectId ORDER BY creation_timestamp ASC")
-    List<Task> getTasksByProjectId(long givenProjectId);
+    List<Task> getTasksByProjectId(long givenProjectId);*/
 }

@@ -8,11 +8,17 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatImageView;
+import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.cleanup.todoc.TodocApplication;
 import com.cleanup.todoc.databinding.ItemTaskBinding;
 import com.cleanup.todoc.model.entities.Project;
 import com.cleanup.todoc.model.entities.Task;
+import com.cleanup.todoc.model.repositories.ProjectRepository;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
@@ -21,38 +27,37 @@ import java.util.List;
  *
  * @author Gaëtan HERFRAY
  */
-public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHolder> {
-    /**
-     * The list of tasks the adapter deals with
-     */
-    @NonNull
-    private List<Task> tasks;
-
+public class TasksAdapter extends ListAdapter<Task, TasksAdapter.TaskViewHolder> {
     /**
      * The listener for when a task needs to be deleted
      */
     @NonNull
     private final DeleteTaskListener deleteTaskListener;
+    private final ProjectRepository projectRepository;
 
     /**
      * Instantiates a new TasksAdapter.
      *
-     * @param tasks the list of tasks the adapter deals with to set
      */
-    TasksAdapter(@NonNull final List<Task> tasks, @NonNull final DeleteTaskListener deleteTaskListener) {
-        this.tasks = tasks;
+    TasksAdapter(@NonNull final DeleteTaskListener deleteTaskListener) {
+        super(DIFF_CALLBACK);
         this.deleteTaskListener = deleteTaskListener;
+        projectRepository = TodocApplication.sDependencyContainer.projectRepository;
     }
 
-    /**
-     * Updates the list of tasks the adapter deals with.
-     *
-     * @param tasks the list of tasks the adapter deals with to set
-     */
-    void updateTasks(@NonNull final List<Task> tasks) {
-        this.tasks = tasks;
-        notifyDataSetChanged();
-    }
+    private static final DiffUtil.ItemCallback<Task> DIFF_CALLBACK = new DiffUtil.ItemCallback<Task>() {
+        @Override
+        public boolean areItemsTheSame(@NonNull @NotNull Task oldItem, @NonNull @NotNull Task newItem) {
+            return oldItem.getId() == newItem.getId();
+        }
+
+        @Override
+        public boolean areContentsTheSame(@NonNull @NotNull Task oldItem, @NonNull @NotNull Task newItem) {
+            return (oldItem.getProjectId() == newItem.getProjectId() &&
+                    oldItem.getName().equals(newItem.getName()) &&
+                    oldItem.getCreationTimestamp() == newItem.getCreationTimestamp());
+        }
+    };
 
     @NonNull
     @Override
@@ -63,12 +68,7 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHold
 
     @Override
     public void onBindViewHolder(@NonNull TaskViewHolder taskViewHolder, int position) {
-        taskViewHolder.bind(tasks.get(position));
-    }
-
-    @Override
-    public int getItemCount() {
-        return tasks.size();
+        taskViewHolder.bind(getItem(position));
     }
 
     /**
@@ -147,8 +147,7 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHold
             lblTaskName.setText(task.getName());
             imgDelete.setTag(task);
 
-            //TODO: use VM LiveData
-            final Project taskProject = null;
+            final Project taskProject = projectRepository.getProjectById(task.getProjectId());
             if (taskProject != null) {
                 imgProject.setImageTintList(ColorStateList.valueOf(taskProject.getColor()));
                 lblProjectName.setText(taskProject.getName());
