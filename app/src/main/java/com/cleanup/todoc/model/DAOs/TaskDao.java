@@ -23,9 +23,9 @@ public interface TaskDao {
     @Query("SELECT * FROM task_table ORDER BY creation_timestamp ASC")
     LiveData<List<Task>> getAllTasksOldNew();
 
-    @Query("SELECT * FROM task_table ORDER BY projectId DESC")
+/*    @Query("SELECT * FROM task_table ORDER BY project_id DESC")
     LiveData<List<Task>> getAllTasksProjectSorting();
-/*
+
     @Query("SELECT * FROM task_table WHERE projectId = :givenProjectId ORDER BY creation_timestamp ASC")
     List<Task> getTasksByProjectId(long givenProjectId);*/
 }

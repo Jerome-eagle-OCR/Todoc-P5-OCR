@@ -13,13 +13,11 @@ public class TaskRepository {
 
     private final TaskDao mTaskDao;
     private final LiveData<List<Task>> allTasksOldNew;
-    private final LiveData<List<Task>> allTasksProjectSorting;
     private final Executor doInBackground;
 
     public TaskRepository(TaskDao taskDao) {
         mTaskDao = taskDao;
         allTasksOldNew = mTaskDao.getAllTasksOldNew();
-        allTasksProjectSorting = mTaskDao.getAllTasksProjectSorting();
         doInBackground = Executors.newFixedThreadPool(2);
     }
 
@@ -34,12 +32,4 @@ public class TaskRepository {
     public LiveData<List<Task>> getAllTasksOldNew() {
         return allTasksOldNew;
     }
-
-    public LiveData<List<Task>> getAllTasksProjectSorting() {
-        return allTasksProjectSorting;
-    }
-/*
-    public List<Task> getTasksByProjectId(long givenProjectId) {
-        return mTaskDao.getTasksByProjectId(givenProjectId);
-    }*/
 }

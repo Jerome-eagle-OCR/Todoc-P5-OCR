@@ -17,7 +17,7 @@ import java.util.Comparator;
 //@Entity(tableName = "task_table")
 @Entity(tableName = "task_table", foreignKeys = {@ForeignKey(entity = Project.class,
         parentColumns = "id",
-        childColumns = "projectId",
+        childColumns = "project_id",
         onDelete = ForeignKey.CASCADE)
 })
 public class Task {
@@ -30,7 +30,7 @@ public class Task {
     /**
      * The unique identifier of the project associated to the task
      */
-    @ColumnInfo(name = "projectId", index = true)
+    @ColumnInfo(name = "project_id", index = true)
     private long projectId;
 
     /**

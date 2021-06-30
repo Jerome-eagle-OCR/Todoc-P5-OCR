@@ -5,8 +5,10 @@ import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.Query;
+import androidx.room.Transaction;
 
 import com.cleanup.todoc.model.entities.Project;
+import com.cleanup.todoc.model.entities.ProjectWithTasks;
 
 import java.util.List;
 
@@ -21,7 +23,11 @@ public interface ProjectDao {
 
     @Query("SELECT * FROM project_table ORDER BY id")
     LiveData<Project[]> getProjects();
-/*
-    @Query("SELECT * FROM project_table WHERE id = :givenId")
+
+    @Transaction
+    @Query("SELECT * FROM project_table ORDER BY name ASC")
+    LiveData<ProjectWithTasks> getProjectsWithTasks();
+
+/*    @Query("SELECT * FROM project_table WHERE id = :givenId")
     Project getProjectById(long givenId);*/
 }

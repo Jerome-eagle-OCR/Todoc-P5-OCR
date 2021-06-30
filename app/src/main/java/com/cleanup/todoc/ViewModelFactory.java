@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.cleanup.todoc.DI.TodocApplication;
 import com.cleanup.todoc.model.repositories.ProjectRepository;
 import com.cleanup.todoc.model.repositories.TaskRepository;
 import com.cleanup.todoc.ui.MainViewModel;
@@ -17,12 +18,10 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
     public static ViewModelFactory getInstance() {
         if (factory == null) {
             synchronized (ViewModelFactory.class) {
-                if (factory == null) {
                     factory = new ViewModelFactory(
                             TodocApplication.sDependencyContainer.projectRepository,
                             TodocApplication.sDependencyContainer.taskRepository
                     );
-                }
             }
         }
         return factory;

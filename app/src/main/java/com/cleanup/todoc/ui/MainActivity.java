@@ -26,10 +26,9 @@ import com.cleanup.todoc.databinding.DialogAddTaskBinding;
 import com.cleanup.todoc.model.entities.Project;
 import com.cleanup.todoc.model.entities.Task;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -100,16 +99,17 @@ public class MainActivity extends AppCompatActivity implements TasksAdapter.Dele
         /**
          * The RecyclerView which displays the list of tasks
          */
-        mTasks = new ArrayList<>();
-        viewModel.getSortedTaskList().observe(this, tasks -> {
-            mTasks = tasks;
-            updateTasks();
-        });
-        mProjects = new Project[0];
-        viewModel.getAllProjects().observe(this, projects -> mProjects = projects);
         mBinding.listTasks.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         adapter = new TasksAdapter(this);
         mBinding.listTasks.setAdapter(adapter);
+
+        mTasks = new ArrayList<>();
+        viewModel.getSortedListForDisplay().observe(this, tasks -> {
+            mTasks = tasks;
+            updateTasks();
+        });
+
+        viewModel.getProjectsMappedById().observe(this, longProjectHashMap -> adapter.submitProjects(longProjectHashMap));
     }
 
     @Override
@@ -260,6 +260,9 @@ public class MainActivity extends AppCompatActivity implements TasksAdapter.Dele
      * Sets the data of the Spinner with projects to associate to a new task
      */
     private void populateDialogSpinner() {
+        mProjects = new Project[0];
+        viewModel.getAllProjects().observe(this, projects -> mProjects = projects);
+
         final ArrayAdapter<Project> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, mProjects);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         if (dialogSpinner != null) {

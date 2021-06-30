@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.cleanup.todoc.TodocApplication;
+import com.cleanup.todoc.DI.TodocApplication;
 import com.cleanup.todoc.databinding.ItemTaskBinding;
 import com.cleanup.todoc.model.entities.Project;
 import com.cleanup.todoc.model.entities.Task;
@@ -20,7 +20,7 @@ import com.cleanup.todoc.model.repositories.ProjectRepository;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
+import java.util.HashMap;
 
 /**
  * <p>Adapter which handles the list of tasks to display in the dedicated RecyclerView.</p>
@@ -33,7 +33,7 @@ public class TasksAdapter extends ListAdapter<Task, TasksAdapter.TaskViewHolder>
      */
     @NonNull
     private final DeleteTaskListener deleteTaskListener;
-    private final ProjectRepository projectRepository;
+    private HashMap<Long, Project> projects;
 
     /**
      * Instantiates a new TasksAdapter.
@@ -42,7 +42,6 @@ public class TasksAdapter extends ListAdapter<Task, TasksAdapter.TaskViewHolder>
     TasksAdapter(@NonNull final DeleteTaskListener deleteTaskListener) {
         super(DIFF_CALLBACK);
         this.deleteTaskListener = deleteTaskListener;
-        projectRepository = TodocApplication.sDependencyContainer.projectRepository;
     }
 
     private static final DiffUtil.ItemCallback<Task> DIFF_CALLBACK = new DiffUtil.ItemCallback<Task>() {
@@ -69,6 +68,10 @@ public class TasksAdapter extends ListAdapter<Task, TasksAdapter.TaskViewHolder>
     @Override
     public void onBindViewHolder(@NonNull TaskViewHolder taskViewHolder, int position) {
         taskViewHolder.bind(getItem(position));
+    }
+
+    public void submitProjects(HashMap<Long, Project> projects) {
+        this.projects = projects;
     }
 
     /**
@@ -147,7 +150,7 @@ public class TasksAdapter extends ListAdapter<Task, TasksAdapter.TaskViewHolder>
             lblTaskName.setText(task.getName());
             imgDelete.setTag(task);
 
-            final Project taskProject = projectRepository.getProjectById(task.getProjectId());
+            final Project taskProject = projects.get(task.getProjectId());
             if (taskProject != null) {
                 imgProject.setImageTintList(ColorStateList.valueOf(taskProject.getColor()));
                 lblProjectName.setText(taskProject.getName());
