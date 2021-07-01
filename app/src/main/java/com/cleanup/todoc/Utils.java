@@ -17,7 +17,7 @@ public abstract class Utils {
         /**
          * Sort by project (projects ordered by id according to SQL request)
          */
-        PROJECT_ID_ORDER,
+        PROJECT_AZ,
         /**
          * No sort
          */

@@ -5,8 +5,8 @@
     tools:context=".ui.MainActivity">
 
     <item
-        android:id="@+id/action_filter"
-        android:icon="@drawable/ic_filter_list"
+        android:id="@+id/action_sort"
+        android:icon="@drawable/ic_sort_list"
         android:title="@string/label_action_filter"
         app:showAsAction="ifRoom">
         <menu>

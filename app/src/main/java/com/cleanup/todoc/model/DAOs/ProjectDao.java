@@ -8,7 +8,7 @@ import androidx.room.Query;
 import androidx.room.Transaction;
 
 import com.cleanup.todoc.model.entities.Project;
-import com.cleanup.todoc.model.entities.ProjectWithTasks;
+import com.cleanup.todoc.model.entities.relation.ProjectWithTasks;
 
 import java.util.List;
 
@@ -26,7 +26,7 @@ public interface ProjectDao {
 
     @Transaction
     @Query("SELECT * FROM project_table ORDER BY name ASC")
-    LiveData<ProjectWithTasks> getProjectsWithTasks();
+    LiveData<List<ProjectWithTasks>> getProjectsAZWithTasks();
 
 /*    @Query("SELECT * FROM project_table WHERE id = :givenId")
     Project getProjectById(long givenId);*/

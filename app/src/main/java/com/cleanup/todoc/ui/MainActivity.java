@@ -28,7 +28,6 @@ import com.cleanup.todoc.model.entities.Task;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -89,7 +88,6 @@ public class MainActivity extends AppCompatActivity implements TasksAdapter.Dele
 
         viewModel = new ViewModelProvider(this, ViewModelFactory.getInstance()).get(MainViewModel.class);
 
-
         setListTasks();
 
         mBinding.fabAddTask.setOnClickListener(view1 -> showAddTaskDialog());
@@ -123,7 +121,7 @@ public class MainActivity extends AppCompatActivity implements TasksAdapter.Dele
         int id = item.getItemId();
 
         if (id == R.id.sort_by_project) {
-            sortMethod = Utils.SortMethod.PROJECT_ID_ORDER;
+            sortMethod = Utils.SortMethod.PROJECT_AZ;
         } else if (id == R.id.sort_oldest_first) {
             sortMethod = Utils.SortMethod.OLD_FIRST;
         } else if (id == R.id.sort_recent_first) {
@@ -169,7 +167,7 @@ public class MainActivity extends AppCompatActivity implements TasksAdapter.Dele
                         taskName,
                         new Date().getTime()
                 );
-
+                //Adds the created task to the list of tasks
                 viewModel.insertTask(task);
 
                 dialogInterface.dismiss();
@@ -197,15 +195,6 @@ public class MainActivity extends AppCompatActivity implements TasksAdapter.Dele
         dialogSpinner = dialog.findViewById(R.id.project_spinner);
 
         populateDialogSpinner();
-    }
-
-    /**
-     * Adds the given task to the list of created tasks.
-     *
-     * @param task the task to be added to the list
-     */
-    private void addTask(@NonNull Task task) {
-        mTasks.add(task);
     }
 
     /**

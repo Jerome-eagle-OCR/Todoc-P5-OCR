@@ -12,11 +12,9 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.cleanup.todoc.DI.TodocApplication;
 import com.cleanup.todoc.databinding.ItemTaskBinding;
 import com.cleanup.todoc.model.entities.Project;
 import com.cleanup.todoc.model.entities.Task;
-import com.cleanup.todoc.model.repositories.ProjectRepository;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -33,7 +31,7 @@ public class TasksAdapter extends ListAdapter<Task, TasksAdapter.TaskViewHolder>
      */
     @NonNull
     private final DeleteTaskListener deleteTaskListener;
-    private HashMap<Long, Project> projects;
+    private HashMap<Long, Project> projectHashMap;
 
     /**
      * Instantiates a new TasksAdapter.
@@ -71,7 +69,7 @@ public class TasksAdapter extends ListAdapter<Task, TasksAdapter.TaskViewHolder>
     }
 
     public void submitProjects(HashMap<Long, Project> projects) {
-        this.projects = projects;
+        this.projectHashMap = projects;
     }
 
     /**
@@ -150,7 +148,8 @@ public class TasksAdapter extends ListAdapter<Task, TasksAdapter.TaskViewHolder>
             lblTaskName.setText(task.getName());
             imgDelete.setTag(task);
 
-            final Project taskProject = projects.get(task.getProjectId());
+            final long projectId = task.getProjectId();
+            final Project taskProject = projectHashMap.get(projectId);
             if (taskProject != null) {
                 imgProject.setImageTintList(ColorStateList.valueOf(taskProject.getColor()));
                 lblProjectName.setText(taskProject.getName());
