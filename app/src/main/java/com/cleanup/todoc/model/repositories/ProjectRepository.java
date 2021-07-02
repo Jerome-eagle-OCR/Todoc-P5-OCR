@@ -18,13 +18,13 @@ public class ProjectRepository {
 
     private final ProjectDao mProjectDao;
     private final LiveData<Project[]> allProjects;
-    private final LiveData<List<ProjectWithTasks>> projectsAZWithTasks;
+    private final LiveData<List<ProjectWithTasks>> allProjectsAZWithTasks;
     private final Executor doInBackground;
 
     public ProjectRepository(ProjectDao projectDao) {
         mProjectDao = projectDao;
         allProjects = mProjectDao.getProjects();
-        projectsAZWithTasks = mProjectDao.getProjectsAZWithTasks();
+        allProjectsAZWithTasks = mProjectDao.getProjectsAZWithTasks();
         doInBackground = Executors.newFixedThreadPool(2);
     }
 
@@ -50,8 +50,8 @@ public class ProjectRepository {
     }
 
     public LiveData<List<Task>> getAllTasksProjectAZ() {
-        return Transformations.map(projectsAZWithTasks, input -> {
-            ArrayList<Task> output = new ArrayList<>();
+        return Transformations.map(allProjectsAZWithTasks, input -> {
+            List<Task> output = new ArrayList<>();
             for (ProjectWithTasks projectWithTasks : input) output.addAll(projectWithTasks.tasks);
 
             return output;

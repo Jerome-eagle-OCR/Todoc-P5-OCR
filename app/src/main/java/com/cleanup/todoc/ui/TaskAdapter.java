@@ -23,9 +23,9 @@ import java.util.HashMap;
 /**
  * <p>Adapter which handles the list of tasks to display in the dedicated RecyclerView.</p>
  *
- * @author Gaëtan HERFRAY
+ * @author Gaëtan HERFRAY / Modified by Jérôme Rigault
  */
-public class TasksAdapter extends ListAdapter<Task, TasksAdapter.TaskViewHolder> {
+public class TaskAdapter extends ListAdapter<Task, TaskAdapter.TaskViewHolder> {
     /**
      * The listener for when a task needs to be deleted
      */
@@ -34,10 +34,10 @@ public class TasksAdapter extends ListAdapter<Task, TasksAdapter.TaskViewHolder>
     private HashMap<Long, Project> projectHashMap;
 
     /**
-     * Instantiates a new TasksAdapter.
+     * Instantiates a new TaskAdapter.
      *
      */
-    TasksAdapter(@NonNull final DeleteTaskListener deleteTaskListener) {
+    TaskAdapter(@NonNull final DeleteTaskListener deleteTaskListener) {
         super(DIFF_CALLBACK);
         this.deleteTaskListener = deleteTaskListener;
     }
@@ -68,8 +68,23 @@ public class TasksAdapter extends ListAdapter<Task, TasksAdapter.TaskViewHolder>
         taskViewHolder.bind(getItem(position));
     }
 
+    /**
+     * Setter to submit up to date projects hash map to retrieve easily a project from its id
+     * Useful for bind(Task) method to display proper project name and color for each task
+     * @param projects
+     */
     public void submitProjects(HashMap<Long, Project> projects) {
         this.projectHashMap = projects;
+    }
+
+    /**
+     * Getter to retrieve any task from its position in the list adapter
+     * Useful for the ItemTouchHelper implemented in MainActivity, to delete a task swiping the item
+     * @param position
+     * @return
+     */
+    public Task getTaskAtPosition(int position) {
+        return getItem(position);
     }
 
     /**

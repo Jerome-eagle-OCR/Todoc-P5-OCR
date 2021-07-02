@@ -25,6 +25,7 @@
         android:clipToPadding="false"
         android:paddingBottom="88dp"
         tools:itemCount="5"
+        android:background="@color/ripple_color"
         tools:listitem="@layout/item_task" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton

@@ -1,6 +1,9 @@
 package com.cleanup.todoc.ui;
 
 import android.content.DialogInterface;
+import android.graphics.Canvas;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -14,9 +17,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.Observer;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.cleanup.todoc.R;
 import com.cleanup.todoc.Utils;
@@ -25,8 +30,10 @@ import com.cleanup.todoc.databinding.ActivityMainBinding;
 import com.cleanup.todoc.databinding.DialogAddTaskBinding;
 import com.cleanup.todoc.model.entities.Project;
 import com.cleanup.todoc.model.entities.Task;
+import com.google.android.material.snackbar.Snackbar;
 
-import java.util.ArrayList;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Date;
 import java.util.List;
 
@@ -36,7 +43,8 @@ import java.util.List;
  *
  * @author Gaëtan HERFRAY
  */
-public class MainActivity extends AppCompatActivity implements TasksAdapter.DeleteTaskListener {
+public class MainActivity extends AppCompatActivity implements TaskAdapter.DeleteTaskListener {
+
     /**
      * List of all projects available in the application
      */
@@ -50,7 +58,7 @@ public class MainActivity extends AppCompatActivity implements TasksAdapter.Dele
     /**
      * The adapter which handles the list of tasks
      */
-    private TasksAdapter adapter;
+    private TaskAdapter adapter;
 
     /**
      * The sort method to be used to display tasks
@@ -97,17 +105,102 @@ public class MainActivity extends AppCompatActivity implements TasksAdapter.Dele
         /**
          * The RecyclerView which displays the list of tasks
          */
-        mBinding.listTasks.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
-        adapter = new TasksAdapter(this);
-        mBinding.listTasks.setAdapter(adapter);
+        final RecyclerView taskRecyclerview = mBinding.listTasks;
+        taskRecyclerview.setLayoutManager(new LinearLayoutManager(this) {
+            @Override
+            public void onLayoutCompleted(RecyclerView.State state) {
+                super.onLayoutCompleted(state);
+                taskRecyclerview.post(() ->
+                        taskRecyclerview.smoothScrollToPosition(Integer.MIN_VALUE));
+            }
+        });
+        adapter = new TaskAdapter(this);
+        taskRecyclerview.setAdapter(adapter);
+        taskRecyclerview.setHasFixedSize(true);
 
-        mTasks = new ArrayList<>();
+        setItemTouchHelper(taskRecyclerview, adapter);
+
         viewModel.getSortedListForDisplay().observe(this, tasks -> {
             mTasks = tasks;
             updateTasks();
         });
 
         viewModel.getProjectsMappedById().observe(this, longProjectHashMap -> adapter.submitProjects(longProjectHashMap));
+    }
+
+    public void setItemTouchHelper(RecyclerView taskRecyclerview, TaskAdapter adapter) {
+        new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+            @Override
+            public boolean onMove(@NonNull @NotNull RecyclerView recyclerView,
+                                  @NonNull @NotNull RecyclerView.ViewHolder viewHolder,
+                                  @NonNull @NotNull RecyclerView.ViewHolder target
+            ) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(@NonNull @NotNull RecyclerView.ViewHolder viewHolder,
+                                 int direction
+            ) {
+                int position = viewHolder.getAdapterPosition();
+                Task taskToDelete = adapter.getTaskAtPosition(position);
+                String snackMessage = "Voulez-vous vraiment supprimer la tâche ?" +
+                        "\nTaper le bandeau pour annuler";
+                final Snackbar snackbar = Snackbar.make(viewHolder.itemView, snackMessage, Snackbar.LENGTH_INDEFINITE)
+                        .setBackgroundTint(getResources().getColor(R.color.colorPrimaryDark))
+                        .setAction("OUI", v -> onDeleteTask(taskToDelete));
+                snackbar.getView().setOnClickListener(v -> {
+                    adapter.notifyItemChanged(position);
+                    taskRecyclerview.postOnAnimation(() -> taskRecyclerview.smoothScrollToPosition(position));
+                    snackbar.dismiss();
+                });
+                if (!snackbar.isShown()) snackbar.show();
+            }
+
+            @Override
+            public void onChildDraw(@NonNull @NotNull Canvas c,
+                                    @NonNull @NotNull RecyclerView recyclerView,
+                                    @NonNull @NotNull RecyclerView.ViewHolder viewHolder,
+                                    float dX, float dY, int actionState, boolean isCurrentlyActive
+            ) {
+                View itemView = viewHolder.itemView;
+
+                swipeDrawing(c, dX, itemView);
+
+                super.onChildDraw(c, recyclerView, viewHolder, dX / 2, dY, actionState, isCurrentlyActive);
+            }
+        }).attachToRecyclerView(taskRecyclerview);
+    }
+
+    private void swipeDrawing(@NotNull Canvas c, float dX, View itemView) {
+        ColorDrawable swipeBkgnd = new ColorDrawable(getResources().getColor(R.color.colorAccent));
+        Drawable deleteIcon = AppCompatResources.getDrawable(this, R.drawable.ic_delete);
+
+
+        int iconMargin = (itemView.getHeight() - deleteIcon.getIntrinsicHeight()) / 2;
+
+        if (dX > 0) {
+            swipeBkgnd.setBounds(itemView.getLeft(), itemView.getTop(),
+                    itemView.getLeft() + (int) dX, itemView.getBottom()
+            );
+            deleteIcon.setBounds(itemView.getLeft() + iconMargin, itemView.getTop() + iconMargin,
+                    itemView.getLeft() + iconMargin + deleteIcon.getIntrinsicWidth(),
+                    itemView.getBottom() - iconMargin
+            );
+            swipeBkgnd.draw(c);
+            deleteIcon.draw(c);
+        } else {
+            swipeBkgnd.setBounds(itemView.getRight() + (int) dX, itemView.getTop(),
+                    itemView.getRight(), itemView.getBottom()
+            );
+            deleteIcon.setBounds(itemView.getRight() - iconMargin - deleteIcon.getIntrinsicWidth(),
+                    itemView.getTop() + iconMargin,
+                    itemView.getRight() - iconMargin, itemView.getBottom() - iconMargin
+            );
+            swipeBkgnd.draw(c);
+            deleteIcon.draw(c);
+        }
+
     }
 
     @Override
@@ -128,7 +221,7 @@ public class MainActivity extends AppCompatActivity implements TasksAdapter.Dele
             sortMethod = Utils.SortMethod.RECENT_FIRST;
         }
 
-        viewModel.setSortMethod(sortMethod);
+        viewModel.setSorting(sortMethod);
 
         return super.onOptionsItemSelected(item);
     }

@@ -10,13 +10,11 @@ import java.util.List;
 
 
 public class ProjectWithTasks {
-    @Embedded
-    public Project project;
-
+    @Embedded public Project project;
     @Relation(
             parentColumn = "id",
-            entityColumn = "project_id"
+            entityColumn = "project_id",
+            entity = Task.class
     )
-
     public List<Task> tasks;
 }

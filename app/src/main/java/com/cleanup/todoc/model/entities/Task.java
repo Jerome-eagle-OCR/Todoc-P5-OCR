@@ -14,12 +14,12 @@ import java.util.Comparator;
  *
  * @author Gaëtan HERFRAY
  */
-//@Entity(tableName = "task_table")
-@Entity(tableName = "task_table", foreignKeys = {@ForeignKey(entity = Project.class,
+@Entity(tableName = "task_table")
+/*@Entity(tableName = "task_table", foreignKeys = {@ForeignKey(entity = Project.class,
         parentColumns = "id",
         childColumns = "project_id",
         onDelete = ForeignKey.CASCADE)
-})
+})*/
 public class Task {
     /**
      * The unique identifier of the task
@@ -30,7 +30,8 @@ public class Task {
     /**
      * The unique identifier of the project associated to the task
      */
-    @ColumnInfo(name = "project_id", index = true)
+    @ColumnInfo(name = "project_id")
+    //@ColumnInfo(name = "project_id", index = true)
     private long projectId;
 
     /**
