@@ -1,9 +1,6 @@
 package com.cleanup.todoc.ui;
 
 import android.content.DialogInterface;
-import android.graphics.Canvas;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -12,12 +9,12 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.content.res.AppCompatResources;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -30,9 +27,7 @@ import com.cleanup.todoc.databinding.ActivityMainBinding;
 import com.cleanup.todoc.databinding.DialogAddTaskBinding;
 import com.cleanup.todoc.model.entities.Project;
 import com.cleanup.todoc.model.entities.Task;
-import com.google.android.material.snackbar.Snackbar;
-
-import org.jetbrains.annotations.NotNull;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.Date;
 import java.util.List;
@@ -43,7 +38,7 @@ import java.util.List;
  *
  * @author Gaëtan HERFRAY
  */
-public class MainActivity extends AppCompatActivity implements TaskAdapter.DeleteTaskListener {
+public class MainActivity extends AppCompatActivity implements TaskAdapter.EditTaskListener {
 
     /**
      * List of all projects available in the application
@@ -61,10 +56,9 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.Delet
     private TaskAdapter adapter;
 
     /**
-     * The sort method to be used to display tasks
+     * The floating action button to add a new task
      */
-    @NonNull
-    private Utils.SortMethod sortMethod = Utils.SortMethod.NONE;
+    private FloatingActionButton fabAddTask;
 
     /**
      * Dialog to create a new task
@@ -94,30 +88,26 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.Delet
         mBinding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(mBinding.getRoot());
 
-        viewModel = new ViewModelProvider(this, ViewModelFactory.getInstance()).get(MainViewModel.class);
-
-        setListTasks();
-
-        mBinding.fabAddTask.setOnClickListener(view1 -> showAddTaskDialog());
+        init();
     }
 
-    private void setListTasks() {
-        /**
-         * The RecyclerView which displays the list of tasks
-         */
+    /**
+     *
+     */
+    private void init() {
+        viewModel = new ViewModelProvider(this, ViewModelFactory.getInstance()).get(MainViewModel.class);
+
+        fabAddTask = mBinding.fabAddTask;
+        fabAddTask.setOnClickListener(view1 -> showAddTaskDialog());
+
+        //The RecyclerView which displays the list of tasks
         final RecyclerView taskRecyclerview = mBinding.listTasks;
-        taskRecyclerview.setLayoutManager(new LinearLayoutManager(this) {
-            @Override
-            public void onLayoutCompleted(RecyclerView.State state) {
-                super.onLayoutCompleted(state);
-                taskRecyclerview.post(() ->
-                        taskRecyclerview.smoothScrollToPosition(Integer.MIN_VALUE));
-            }
-        });
+        taskRecyclerview.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         adapter = new TaskAdapter(this);
         taskRecyclerview.setAdapter(adapter);
         taskRecyclerview.setHasFixedSize(true);
 
+        //Set delete on swipe
         setItemTouchHelper(taskRecyclerview, adapter);
 
         viewModel.getSortedListForDisplay().observe(this, tasks -> {
@@ -125,82 +115,43 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.Delet
             updateTasks();
         });
 
-        viewModel.getProjectsMappedById().observe(this, longProjectHashMap -> adapter.submitProjects(longProjectHashMap));
+        //Scrolls list to top when a sorting is selected
+        viewModel.getSortMethod().observe(this, sortMethod -> {
+            taskRecyclerview.smoothScrollToPosition(Integer.MIN_VALUE);
+        });
+
+        //Submits up to date projects to adapter
+        viewModel.getProjectsMappedById().observe(this, longProjectHashMap -> {
+            adapter.submitProjects(longProjectHashMap);
+        });
+
+        //Manage the display depending on whether the list is empty or populated
+        TextView noTaskLbl = mBinding.lblNoTask;
+        noTaskLbl.setVisibility(View.GONE); //initially gone to have a blank screen starting the app
+        //ViewModel trigger
+        viewModel.isTaskListEmpty().observe(this, aBoolean -> {
+            if (aBoolean != null) {
+                if (aBoolean) {
+                    noTaskLbl.setVisibility(View.VISIBLE);
+                    taskRecyclerview.setVisibility(View.GONE);
+                } else {
+                    noTaskLbl.setVisibility(View.GONE);
+                    taskRecyclerview.setVisibility(View.VISIBLE);
+                }
+            }
+        });
     }
 
-    public void setItemTouchHelper(RecyclerView taskRecyclerview, TaskAdapter adapter) {
-        new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
-            @Override
-            public boolean onMove(@NonNull @NotNull RecyclerView recyclerView,
-                                  @NonNull @NotNull RecyclerView.ViewHolder viewHolder,
-                                  @NonNull @NotNull RecyclerView.ViewHolder target
-            ) {
-                return false;
-            }
+    private void setItemTouchHelper(RecyclerView taskRecyclerview, TaskAdapter adapter) {
+        int snkBckGndColor = getResources().getColor(R.color.colorPrimaryDark);
+        int sncTxtActnColor = getResources().getColor(android.R.color.holo_green_light);
+        int swpBckGndColor = getResources().getColor(R.color.colorAccent);
 
-            @Override
-            public void onSwiped(@NonNull @NotNull RecyclerView.ViewHolder viewHolder,
-                                 int direction
-            ) {
-                int position = viewHolder.getAdapterPosition();
-                Task taskToDelete = adapter.getTaskAtPosition(position);
-                String snackMessage = "Voulez-vous vraiment supprimer la tâche ?" +
-                        "\nTaper le bandeau pour annuler";
-                final Snackbar snackbar = Snackbar.make(viewHolder.itemView, snackMessage, Snackbar.LENGTH_INDEFINITE)
-                        .setBackgroundTint(getResources().getColor(R.color.colorPrimaryDark))
-                        .setAction("OUI", v -> onDeleteTask(taskToDelete));
-                snackbar.getView().setOnClickListener(v -> {
-                    adapter.notifyItemChanged(position);
-                    taskRecyclerview.postOnAnimation(() -> taskRecyclerview.smoothScrollToPosition(position));
-                    snackbar.dismiss();
-                });
-                if (!snackbar.isShown()) snackbar.show();
-            }
-
-            @Override
-            public void onChildDraw(@NonNull @NotNull Canvas c,
-                                    @NonNull @NotNull RecyclerView recyclerView,
-                                    @NonNull @NotNull RecyclerView.ViewHolder viewHolder,
-                                    float dX, float dY, int actionState, boolean isCurrentlyActive
-            ) {
-                View itemView = viewHolder.itemView;
-
-                swipeDrawing(c, dX, itemView);
-
-                super.onChildDraw(c, recyclerView, viewHolder, dX / 2, dY, actionState, isCurrentlyActive);
-            }
-        }).attachToRecyclerView(taskRecyclerview);
-    }
-
-    private void swipeDrawing(@NotNull Canvas c, float dX, View itemView) {
-        ColorDrawable swipeBkgnd = new ColorDrawable(getResources().getColor(R.color.colorAccent));
-        Drawable deleteIcon = AppCompatResources.getDrawable(this, R.drawable.ic_delete);
-
-
-        int iconMargin = (itemView.getHeight() - deleteIcon.getIntrinsicHeight()) / 2;
-
-        if (dX > 0) {
-            swipeBkgnd.setBounds(itemView.getLeft(), itemView.getTop(),
-                    itemView.getLeft() + (int) dX, itemView.getBottom()
-            );
-            deleteIcon.setBounds(itemView.getLeft() + iconMargin, itemView.getTop() + iconMargin,
-                    itemView.getLeft() + iconMargin + deleteIcon.getIntrinsicWidth(),
-                    itemView.getBottom() - iconMargin
-            );
-            swipeBkgnd.draw(c);
-            deleteIcon.draw(c);
-        } else {
-            swipeBkgnd.setBounds(itemView.getRight() + (int) dX, itemView.getTop(),
-                    itemView.getRight(), itemView.getBottom()
-            );
-            deleteIcon.setBounds(itemView.getRight() - iconMargin - deleteIcon.getIntrinsicWidth(),
-                    itemView.getTop() + iconMargin,
-                    itemView.getRight() - iconMargin, itemView.getBottom() - iconMargin
-            );
-            swipeBkgnd.draw(c);
-            deleteIcon.draw(c);
-        }
-
+        new ItemTouchHelper(new DeleteTaskItemTouchHelperSimpleCallback(0,
+                ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT,
+                viewModel, adapter, fabAddTask,
+                snkBckGndColor, sncTxtActnColor, swpBckGndColor)
+        ).attachToRecyclerView(taskRecyclerview);
     }
 
     @Override
@@ -213,6 +164,9 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.Delet
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
+        // The sort method to be used to display tasks
+        Utils.SortMethod sortMethod = null;
+
         if (id == R.id.sort_by_project) {
             sortMethod = Utils.SortMethod.PROJECT_AZ;
         } else if (id == R.id.sort_oldest_first) {
@@ -221,14 +175,15 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.Delet
             sortMethod = Utils.SortMethod.RECENT_FIRST;
         }
 
+        //sort method is set in VM which takes care of sorting the list
         viewModel.setSorting(sortMethod);
 
         return super.onOptionsItemSelected(item);
     }
 
     @Override
-    public void onDeleteTask(Task task) {
-        viewModel.deleteTask(task);
+    public void onEditTask(Task task) {
+        //TODO:use this to add edit task feature
     }
 
     /**
@@ -294,15 +249,7 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.Delet
      * Updates the list of tasks in the UI
      */
     private void updateTasks() {
-        if (mTasks.size() == 0) {
-            mBinding.lblNoTask.setVisibility(View.VISIBLE);
-            mBinding.listTasks.setVisibility(View.GONE);
-        } else {
-            mBinding.lblNoTask.setVisibility(View.GONE);
-            mBinding.listTasks.setVisibility(View.VISIBLE);
-
-            adapter.submitList(mTasks);
-        }
+        adapter.submitList(mTasks);
     }
 
     /**
@@ -330,7 +277,6 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.Delet
 
         // This instead of listener to positive button in order to avoid automatic dismiss
         dialog.setOnShowListener(dialogInterface -> {
-
             Button button = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
             button.setOnClickListener(view -> onPositiveButtonClick(dialog));
         });
@@ -342,7 +288,7 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.Delet
      * Sets the data of the Spinner with projects to associate to a new task
      */
     private void populateDialogSpinner() {
-        mProjects = new Project[0];
+        //mProjects = new Project[0];
         viewModel.getAllProjects().observe(this, projects -> mProjects = projects);
 
         final ArrayAdapter<Project> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, mProjects);

@@ -30,16 +30,16 @@ public class TaskAdapter extends ListAdapter<Task, TaskAdapter.TaskViewHolder> {
      * The listener for when a task needs to be deleted
      */
     @NonNull
-    private final DeleteTaskListener deleteTaskListener;
+    private final EditTaskListener editTaskListener;
     private HashMap<Long, Project> projectHashMap;
 
     /**
      * Instantiates a new TaskAdapter.
      *
      */
-    TaskAdapter(@NonNull final DeleteTaskListener deleteTaskListener) {
+    TaskAdapter(@NonNull final EditTaskListener editTaskListener) {
         super(DIFF_CALLBACK);
-        this.deleteTaskListener = deleteTaskListener;
+        this.editTaskListener = editTaskListener;
     }
 
     private static final DiffUtil.ItemCallback<Task> DIFF_CALLBACK = new DiffUtil.ItemCallback<Task>() {
@@ -60,7 +60,7 @@ public class TaskAdapter extends ListAdapter<Task, TaskAdapter.TaskViewHolder> {
     @Override
     public TaskViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int viewType) {
         ItemTaskBinding itemTaskBinding = ItemTaskBinding.inflate(LayoutInflater.from(viewGroup.getContext()), viewGroup, false);
-        return new TaskViewHolder(itemTaskBinding, deleteTaskListener);
+        return new TaskViewHolder(itemTaskBinding, editTaskListener);
     }
 
     @Override
@@ -90,13 +90,13 @@ public class TaskAdapter extends ListAdapter<Task, TaskAdapter.TaskViewHolder> {
     /**
      * Listener for deleting tasks
      */
-    public interface DeleteTaskListener {
+    public interface EditTaskListener {
         /**
-         * Called when a task needs to be deleted.
+         * Called when a task needs to be edited.
          *
-         * @param task the task that needs to be deleted
+         * @param task the task that needs to be edited
          */
-        void onDeleteTask(Task task);
+        void onEditTask(Task task);
     }
 
     /**
@@ -128,29 +128,30 @@ public class TaskAdapter extends ListAdapter<Task, TaskAdapter.TaskViewHolder> {
         /**
          * The listener for when a task needs to be deleted
          */
-        private final DeleteTaskListener deleteTaskListener;
+        private final EditTaskListener editTaskListener;
 
         /**
          * Instantiates a new TaskViewHolder.
          *
          * @param itemTaskBinding    the binding of the task item
-         * @param deleteTaskListener the listener for when a task needs to be deleted to set
+         * @param editTaskListener the listener for when a task needs to be deleted to set
          */
-        TaskViewHolder(@NonNull ItemTaskBinding itemTaskBinding, @NonNull DeleteTaskListener deleteTaskListener) {
+        TaskViewHolder(@NonNull ItemTaskBinding itemTaskBinding, @NonNull EditTaskListener editTaskListener) {
             super(itemTaskBinding.getRoot());
 
-            this.deleteTaskListener = deleteTaskListener;
+            this.editTaskListener = editTaskListener;
 
             imgProject = itemTaskBinding.imgProject;
             lblTaskName = itemTaskBinding.lblTaskName;
             lblProjectName = itemTaskBinding.lblProjectName;
             imgDelete = itemTaskBinding.imgDelete;
 
-            imgDelete.setOnClickListener(view -> {
+            imgDelete.setOnLongClickListener(view -> {
                 final Object tag = view.getTag();
                 if (tag instanceof Task) {
-                    TaskViewHolder.this.deleteTaskListener.onDeleteTask((Task) tag);
+                    TaskViewHolder.this.editTaskListener.onEditTask((Task) tag);
                 }
+                return false;
             });
         }
 

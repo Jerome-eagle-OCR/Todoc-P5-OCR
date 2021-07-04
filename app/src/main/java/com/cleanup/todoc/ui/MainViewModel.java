@@ -2,6 +2,8 @@ package com.cleanup.todoc.ui;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Transformations;
 import androidx.lifecycle.ViewModel;
 
 import com.cleanup.todoc.Utils;
@@ -23,8 +25,10 @@ public class MainViewModel extends ViewModel {
     private final LiveData<HashMap<Long, Project>> projectsMappedById;
     private final LiveData<List<Task>> allTasksOldNew;
     private final LiveData<List<Task>> allTasksProjectAZ;
-    private Utils.SortMethod sortMethod = Utils.SortMethod.NONE;
+    private final MutableLiveData<Utils.SortMethod> sortMethod = new MutableLiveData<>(Utils.SortMethod.NONE);
     private final MediatorLiveData<List<Task>> sortedListForDisplay = new MediatorLiveData<>();
+    private boolean allTasksEmpty;
+    private boolean firstTasksEmptyTest = true;
 
 
     public MainViewModel(ProjectRepository projectRepository, TaskRepository taskRepository) {
@@ -65,18 +69,21 @@ public class MainViewModel extends ViewModel {
     }
 
     public void setSorting(Utils.SortMethod sortMethod) {
-        this.sortMethod = sortMethod;
-        sortTaskList();
+        if (sortMethod != null) {
+            this.sortMethod.setValue(sortMethod);
+            sortTaskList();
+        }
     }
 
-    public LiveData<List<Task>> getSortedListForDisplay() {
-        return sortedListForDisplay;
+    public LiveData<Utils.SortMethod> getSortMethod() {
+        return sortMethod;
     }
 
     private void sortTaskList() {
         List<Task> sortedTaskList = new ArrayList<>();
+        Utils.SortMethod sorting = sortMethod.getValue();
 
-        switch (sortMethod) {
+        switch (sorting) {
             case OLD_FIRST:
             case NONE:
                 sortedTaskList = allTasksOldNew.getValue();
@@ -93,5 +100,21 @@ public class MainViewModel extends ViewModel {
         }
 
         sortedListForDisplay.setValue(sortedTaskList);
+    }
+
+    public LiveData<List<Task>> getSortedListForDisplay() {
+        return sortedListForDisplay;
+    }
+
+    public LiveData<Boolean> isTaskListEmpty() {
+        return Transformations.map(allTasksOldNew, input -> {
+            boolean actualListEmpty = input.isEmpty();
+            if (firstTasksEmptyTest || allTasksEmpty != actualListEmpty) {
+                allTasksEmpty = actualListEmpty;
+                firstTasksEmptyTest = false;
+                return allTasksEmpty;
+            }
+            return null;
+        });
     }
 }
