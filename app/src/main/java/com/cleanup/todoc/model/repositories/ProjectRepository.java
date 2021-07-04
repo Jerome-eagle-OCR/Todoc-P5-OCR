@@ -17,7 +17,7 @@ import java.util.concurrent.Executors;
 public class ProjectRepository {
 
     private final ProjectDao mProjectDao;
-    private final LiveData<Project[]> allProjects;
+    private final LiveData<List<Project>> allProjects;
     private final LiveData<List<ProjectWithTasks>> allProjectsAZWithTasks;
     private final Executor doInBackground;
 
@@ -36,7 +36,7 @@ public class ProjectRepository {
         doInBackground.execute(() -> mProjectDao.delete(project));
     }
 
-    public LiveData<Project[]> getAllProjects() {
+    public LiveData<List<Project>> getAllProjects() {
         return allProjects;
     }
 

@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 import java.util.Comparator;
@@ -60,6 +61,21 @@ public class Task {
         this.setProjectId(projectId);
         this.setName(name);
         this.setCreationTimestamp(creationTimestamp);
+    }
+
+    /**
+     * Alternative constructor for DAO update
+     * @param id                the unique identifier of the task to set
+     * @param projectId         the unique identifier of the project associated to the task to set
+     * @param name              the name of the task to set
+     * @param creationTimestamp the timestamp when the task has been created to set
+     */
+    @Ignore
+    public Task(long id, long projectId, @NonNull String name, long creationTimestamp) {
+        this.id = id;
+        this.projectId = projectId;
+        this.name = name;
+        this.creationTimestamp = creationTimestamp;
     }
 
     /**

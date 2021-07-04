@@ -78,6 +78,12 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.EditT
     @Nullable
     private Spinner dialogSpinner = null;
 
+    /**
+     * Task to edit using the same dialog as for creating a task
+     */
+    @Nullable
+    private Task taskToEdit = null;
+
     private ActivityMainBinding mBinding;
     private MainViewModel viewModel;
 
@@ -181,9 +187,85 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.EditT
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * Updates the list of tasks in the UI
+     */
+    private void updateTasks() {
+        adapter.submitList(mTasks);
+    }
+
     @Override
     public void onEditTask(Task task) {
-        //TODO:use this to add edit task feature
+        taskToEdit = task;
+        showAddTaskDialog();
+    }
+
+    /**
+     * Shows the Dialog for adding a Task
+     */
+    private void showAddTaskDialog() {
+        final AlertDialog dialog = getAddTaskDialog();
+
+        dialog.show();
+
+        dialogEditText = dialog.findViewById(R.id.txt_task_name);
+        dialogSpinner = dialog.findViewById(R.id.project_spinner);
+
+        populateDialogSpinner();
+    }
+
+    /**
+     * Returns the dialog allowing the user to create a new task or edit an existing one.
+     *
+     * @return the dialog allowing the user to create a new task  or edit an existing one
+     */
+    @NonNull
+    private AlertDialog getAddTaskDialog() {
+        final AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this, R.style.Dialog);
+
+        DialogAddTaskBinding dialogBinding = DialogAddTaskBinding.inflate(getLayoutInflater());
+        alertBuilder.setTitle(R.string.add_task);
+        alertBuilder.setView(dialogBinding.getRoot());
+        dialogEditText = dialogBinding.txtTaskName;
+        dialogSpinner = dialogBinding.projectSpinner;
+        if (taskToEdit != null) {
+            dialogEditText.setText(taskToEdit.getName());
+            Project taskProject = viewModel.getProjectsMappedById().getValue().get(taskToEdit.getProjectId());
+            int projectIndex = viewModel.getAllProjects().getValue().indexOf(taskProject);
+            dialogSpinner.post(() -> dialogSpinner.setSelection(projectIndex));
+            alertBuilder.setPositiveButton("Modifier", null);
+        } else {
+            alertBuilder.setPositiveButton(R.string.add, null);
+        }
+        alertBuilder.setOnDismissListener(dialogInterface -> {
+            dialogEditText = null;
+            dialogSpinner = null;
+            dialog = null;
+            taskToEdit = null;
+        });
+
+        dialog = alertBuilder.create();
+
+        // This instead of listener to positive button in order to avoid automatic dismiss
+        dialog.setOnShowListener(dialogInterface -> {
+            Button button = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+            button.setOnClickListener(view -> onPositiveButtonClick(dialog));
+        });
+
+        return dialog;
+    }
+
+    /**
+     * Sets the data of the Spinner with projects to associate to a new task
+     */
+    private void populateDialogSpinner() {
+        viewModel.getAllProjects().observe(this, projects -> mProjects = projects.toArray(new Project[0]));
+
+        final ArrayAdapter<Project> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, mProjects);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        if (dialogSpinner != null) {
+            dialogSpinner.setAdapter(adapter);
+        }
     }
 
     /**
@@ -209,14 +291,19 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.EditT
             }
             // If both project and name of the task have been set
             else if (taskProject != null) {
+                long taskId;
+                long timeStamp;
+                if (taskToEdit == null) {
+                    taskId = -1;
+                    timeStamp = new Date().getTime();
+                } else {
+                    taskId = taskToEdit.getId();
+                    timeStamp = taskToEdit.getCreationTimestamp();
+                }
+                long projectId = taskProject.getId();
 
-                Task task = new Task(
-                        taskProject.getId(),
-                        taskName,
-                        new Date().getTime()
-                );
-                //Adds the created task to the list of tasks
-                viewModel.insertTask(task);
+                //Manage the creation or edition in the list of tasks
+                viewModel.createEditTask(taskId, projectId, taskName, timeStamp);
 
                 dialogInterface.dismiss();
             }
@@ -228,73 +315,6 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.EditT
         // If dialog is already closed
         else {
             dialogInterface.dismiss();
-        }
-    }
-
-    /**
-     * Shows the Dialog for adding a Task
-     */
-    private void showAddTaskDialog() {
-        final AlertDialog dialog = getAddTaskDialog();
-
-        dialog.show();
-
-        dialogEditText = dialog.findViewById(R.id.txt_task_name);
-        dialogSpinner = dialog.findViewById(R.id.project_spinner);
-
-        populateDialogSpinner();
-    }
-
-    /**
-     * Updates the list of tasks in the UI
-     */
-    private void updateTasks() {
-        adapter.submitList(mTasks);
-    }
-
-    /**
-     * Returns the dialog allowing the user to create a new task.
-     *
-     * @return the dialog allowing the user to create a new task
-     */
-    @NonNull
-    private AlertDialog getAddTaskDialog() {
-        final AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this, R.style.Dialog);
-
-        DialogAddTaskBinding dialogBinding = DialogAddTaskBinding.inflate(getLayoutInflater());
-        alertBuilder.setTitle(R.string.add_task);
-        alertBuilder.setView(dialogBinding.getRoot());
-        dialogEditText = dialogBinding.txtTaskName;
-        dialogSpinner = dialogBinding.projectSpinner;
-        alertBuilder.setPositiveButton(R.string.add, null);
-        alertBuilder.setOnDismissListener(dialogInterface -> {
-            dialogEditText = null;
-            dialogSpinner = null;
-            dialog = null;
-        });
-
-        dialog = alertBuilder.create();
-
-        // This instead of listener to positive button in order to avoid automatic dismiss
-        dialog.setOnShowListener(dialogInterface -> {
-            Button button = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
-            button.setOnClickListener(view -> onPositiveButtonClick(dialog));
-        });
-
-        return dialog;
-    }
-
-    /**
-     * Sets the data of the Spinner with projects to associate to a new task
-     */
-    private void populateDialogSpinner() {
-        //mProjects = new Project[0];
-        viewModel.getAllProjects().observe(this, projects -> mProjects = projects);
-
-        final ArrayAdapter<Project> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, mProjects);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        if (dialogSpinner != null) {
-            dialogSpinner.setAdapter(adapter);
         }
     }
 }

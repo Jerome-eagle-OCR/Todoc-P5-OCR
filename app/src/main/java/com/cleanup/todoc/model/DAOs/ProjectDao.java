@@ -22,7 +22,7 @@ public interface ProjectDao {
     void delete(Project project);
 
     @Query("SELECT * FROM project_table ORDER BY id")
-    LiveData<Project[]> getProjects();
+    LiveData<List<Project>> getProjects();
 
     @Transaction
     @Query("SELECT * FROM project_table ORDER BY name ASC")

@@ -146,7 +146,7 @@ public class TaskAdapter extends ListAdapter<Task, TaskAdapter.TaskViewHolder> {
             lblProjectName = itemTaskBinding.lblProjectName;
             imgDelete = itemTaskBinding.imgDelete;
 
-            imgDelete.setOnLongClickListener(view -> {
+            itemView.setOnLongClickListener(view -> {
                 final Object tag = view.getTag();
                 if (tag instanceof Task) {
                     TaskViewHolder.this.editTaskListener.onEditTask((Task) tag);
@@ -162,7 +162,7 @@ public class TaskAdapter extends ListAdapter<Task, TaskAdapter.TaskViewHolder> {
          */
         void bind(Task task) {
             lblTaskName.setText(task.getName());
-            imgDelete.setTag(task);
+            itemView.setTag(task);
 
             final long projectId = task.getProjectId();
             final Project taskProject = projectHashMap.get(projectId);

@@ -18,11 +18,15 @@ public class TaskRepository {
     public TaskRepository(TaskDao taskDao) {
         mTaskDao = taskDao;
         allTasksOldNew = mTaskDao.getAllTasksOldNew();
-        doInBackground = Executors.newFixedThreadPool(2);
+        doInBackground = Executors.newFixedThreadPool(3);
     }
 
     public void insert(Task task) {
         doInBackground.execute(() -> mTaskDao.insert(task));
+    }
+
+    public void update(Task task) {
+        doInBackground.execute(() -> mTaskDao.update(task));
     }
 
     public void delete(Task task) {

@@ -21,7 +21,7 @@ public class MainViewModel extends ViewModel {
 
     private final ProjectRepository projectRepository;
     private final TaskRepository taskRepository;
-    private final LiveData<Project[]> allProjects;
+    private final LiveData<List<Project>> allProjects;
     private final LiveData<HashMap<Long, Project>> projectsMappedById;
     private final LiveData<List<Task>> allTasksOldNew;
     private final LiveData<List<Task>> allTasksProjectAZ;
@@ -51,7 +51,7 @@ public class MainViewModel extends ViewModel {
         projectRepository.delete(project);
     }
 
-    public LiveData<Project[]> getAllProjects() {
+    public LiveData<List<Project>> getAllProjects() {
         return allProjects;
     }
 
@@ -62,6 +62,10 @@ public class MainViewModel extends ViewModel {
 
     public void insertTask(Task task) {
         taskRepository.insert(task);
+    }
+
+    public void updateTask(Task task) {
+        taskRepository.update(task);
     }
 
     public void deleteTask(Task task) {
@@ -116,5 +120,13 @@ public class MainViewModel extends ViewModel {
             }
             return null;
         });
+    }
+
+    public void createEditTask(long taskId, long projectId, String taskName, long timeStamp) {
+        if (taskId == -1) {
+            insertTask(new Task(projectId, taskName, timeStamp));
+        } else {
+            updateTask(new Task(taskId, projectId, taskName, timeStamp));
+        }
     }
 }
