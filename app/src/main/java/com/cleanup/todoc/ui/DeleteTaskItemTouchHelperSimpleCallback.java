@@ -1,6 +1,7 @@
 package com.cleanup.todoc.ui;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -12,7 +13,7 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.cleanup.todoc.R;
-import com.cleanup.todoc.model.entities.Task;
+import com.cleanup.todoc.model.entity.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -23,26 +24,20 @@ public class DeleteTaskItemTouchHelperSimpleCallback extends ItemTouchHelper.Sim
     private final MainViewModel viewModel;
     private final TaskAdapter adapter;
     private final FloatingActionButton fabAddTask;
-    private final int snkBckGndColor;
-    private final int snckTxtActnColor;
-    private final int swpBckGndColor;
+    private final Context context;
+
 
     public DeleteTaskItemTouchHelperSimpleCallback(
             int dragDirs, int swipeDirs,
             MainViewModel viewModel,
             TaskAdapter adapter,
-            FloatingActionButton fabAddTask,
-            int snkBckGndColor,
-            int snckTxtActnColor,
-            int swpBckGndColor
+            FloatingActionButton fabAddTask
     ) {
         super(dragDirs, swipeDirs);
         this.viewModel = viewModel;
         this.adapter = adapter;
         this.fabAddTask = fabAddTask;
-        this.snkBckGndColor = snkBckGndColor;
-        this.snckTxtActnColor = snckTxtActnColor;
-        this.swpBckGndColor = swpBckGndColor;
+        context = fabAddTask.getContext();
     }
 
     @Override
@@ -58,12 +53,17 @@ public class DeleteTaskItemTouchHelperSimpleCallback extends ItemTouchHelper.Sim
 
         Task taskToDelete = adapter.getTaskAtPosition(position);
         viewModel.deleteTask(taskToDelete);
+
         String snackMessage = "Tâche supprimée";
+
         Snackbar.make(taskItem, snackMessage, Snackbar.LENGTH_LONG)
-                .setBackgroundTint(snkBckGndColor)
+                .setBackgroundTint(context.getResources().getColor(R.color.colorPrimaryDark))
                 .setAnchorView(fabAddTask)
-                .setActionTextColor(snckTxtActnColor)
-                .setAction("ANNULER", v -> viewModel.insertTask(taskToDelete)
+                .setActionTextColor(context.getResources().getColor(android.R.color.holo_green_light))
+                .setAction("ANNULER", v -> {
+                    viewModel.insertTask(taskToDelete);
+                    if (position == 0);
+                }
         ).show();
     }
 
@@ -74,7 +74,7 @@ public class DeleteTaskItemTouchHelperSimpleCallback extends ItemTouchHelper.Sim
                             float dX, float dY, int actionState, boolean isCurrentlyActive
     ) {
         View taskItem = viewHolder.itemView;
-        ColorDrawable swipeBkgnd = new ColorDrawable(swpBckGndColor);
+        ColorDrawable swipeBkgnd = new ColorDrawable(context.getResources().getColor(R.color.colorAccent));
         Drawable deleteIcon = AppCompatResources.getDrawable(taskItem.getContext(), R.drawable.ic_delete);
 
         int iconMargin = (taskItem.getHeight() - deleteIcon.getIntrinsicHeight()) / 2;
@@ -99,5 +99,4 @@ public class DeleteTaskItemTouchHelperSimpleCallback extends ItemTouchHelper.Sim
 
         super.onChildDraw(c, recyclerView, viewHolder, dX / 4, dY, actionState, isCurrentlyActive);
     }
-
 }

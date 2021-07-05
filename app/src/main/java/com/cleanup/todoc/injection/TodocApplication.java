@@ -1,4 +1,4 @@
-package com.cleanup.todoc.DI;
+package com.cleanup.todoc.injection;
 
 import android.app.Application;
 

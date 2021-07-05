@@ -1,4 +1,4 @@
-package com.cleanup.todoc.model.entities;
+package com.cleanup.todoc.model.entity;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;

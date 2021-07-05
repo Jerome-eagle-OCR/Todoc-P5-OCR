@@ -4,9 +4,9 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.cleanup.todoc.DI.TodocApplication;
-import com.cleanup.todoc.model.repositories.ProjectRepository;
-import com.cleanup.todoc.model.repositories.TaskRepository;
+import com.cleanup.todoc.injection.TodocApplication;
+import com.cleanup.todoc.model.repository.ProjectRepository;
+import com.cleanup.todoc.model.repository.TaskRepository;
 import com.cleanup.todoc.ui.MainViewModel;
 
 import org.jetbrains.annotations.NotNull;

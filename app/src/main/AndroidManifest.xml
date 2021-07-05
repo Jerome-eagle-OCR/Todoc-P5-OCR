@@ -3,7 +3,7 @@
     package="com.cleanup.todoc">
 
     <application
-        android:name=".DI.TodocApplication"
+        android:name=".injection.TodocApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"

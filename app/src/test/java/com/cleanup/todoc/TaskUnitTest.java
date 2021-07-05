@@ -1,6 +1,6 @@
 package com.cleanup.todoc;
 
-import com.cleanup.todoc.model.entities.Task;
+import com.cleanup.todoc.model.entity.Task;
 
 import org.junit.Test;
 

@@ -1,4 +1,4 @@
-package com.cleanup.todoc.model.DAOs;
+package com.cleanup.todoc.model.dao;
 
 import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
@@ -7,8 +7,8 @@ import androidx.room.Insert;
 import androidx.room.Query;
 import androidx.room.Transaction;
 
-import com.cleanup.todoc.model.entities.Project;
-import com.cleanup.todoc.model.entities.relation.ProjectWithTasks;
+import com.cleanup.todoc.model.entity.Project;
+import com.cleanup.todoc.model.entity.relation.ProjectWithTasks;
 
 import java.util.List;
 

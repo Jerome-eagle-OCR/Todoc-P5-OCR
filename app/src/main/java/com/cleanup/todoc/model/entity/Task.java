@@ -1,14 +1,11 @@
-package com.cleanup.todoc.model.entities;
+package com.cleanup.todoc.model.entity;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
-import androidx.room.ForeignKey;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
-
-import java.util.Comparator;
 
 /**
  * <p>Model for the tasks of the application.</p>
@@ -39,7 +36,6 @@ public class Task {
      * The name of the task
      */
     // Suppress warning because setName is called in constructor
-    @SuppressWarnings("NullableProblems")
     @NonNull
     @ColumnInfo(name = "name")
     private String name;
@@ -72,10 +68,10 @@ public class Task {
      */
     @Ignore
     public Task(long id, long projectId, @NonNull String name, long creationTimestamp) {
-        this.id = id;
-        this.projectId = projectId;
-        this.name = name;
-        this.creationTimestamp = creationTimestamp;
+        this.setId(id);
+        this.setProjectId(projectId);
+        this.setName(name);
+        this.setCreationTimestamp(creationTimestamp);
     }
 
     /**
@@ -110,7 +106,6 @@ public class Task {
      *
      * @return the projectId associated to the task
      */
-    @Nullable
     public long getProjectId() {
         return this.projectId;
     }

@@ -13,8 +13,8 @@ import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.cleanup.todoc.databinding.ItemTaskBinding;
-import com.cleanup.todoc.model.entities.Project;
-import com.cleanup.todoc.model.entities.Task;
+import com.cleanup.todoc.model.entity.Project;
+import com.cleanup.todoc.model.entity.Task;
 
 import org.jetbrains.annotations.NotNull;
 

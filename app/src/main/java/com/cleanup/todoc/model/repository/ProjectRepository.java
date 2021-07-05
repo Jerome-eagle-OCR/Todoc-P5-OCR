@@ -1,12 +1,12 @@
-package com.cleanup.todoc.model.repositories;
+package com.cleanup.todoc.model.repository;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Transformations;
 
-import com.cleanup.todoc.model.DAOs.ProjectDao;
-import com.cleanup.todoc.model.entities.Project;
-import com.cleanup.todoc.model.entities.Task;
-import com.cleanup.todoc.model.entities.relation.ProjectWithTasks;
+import com.cleanup.todoc.model.dao.ProjectDao;
+import com.cleanup.todoc.model.entity.Project;
+import com.cleanup.todoc.model.entity.Task;
+import com.cleanup.todoc.model.entity.relation.ProjectWithTasks;
 
 import java.util.ArrayList;
 import java.util.HashMap;

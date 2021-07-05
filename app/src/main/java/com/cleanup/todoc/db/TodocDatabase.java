@@ -1,4 +1,4 @@
-package com.cleanup.todoc.DB;
+package com.cleanup.todoc.db;
 
 import android.content.Context;
 
@@ -8,10 +8,10 @@ import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
-import com.cleanup.todoc.model.DAOs.ProjectDao;
-import com.cleanup.todoc.model.DAOs.TaskDao;
-import com.cleanup.todoc.model.entities.Project;
-import com.cleanup.todoc.model.entities.Task;
+import com.cleanup.todoc.model.dao.ProjectDao;
+import com.cleanup.todoc.model.dao.TaskDao;
+import com.cleanup.todoc.model.entity.Project;
+import com.cleanup.todoc.model.entity.Task;
 
 import org.jetbrains.annotations.NotNull;
 

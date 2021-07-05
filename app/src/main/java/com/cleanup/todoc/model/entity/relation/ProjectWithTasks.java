@@ -1,10 +1,10 @@
-package com.cleanup.todoc.model.entities.relation;
+package com.cleanup.todoc.model.entity.relation;
 
 import androidx.room.Embedded;
 import androidx.room.Relation;
 
-import com.cleanup.todoc.model.entities.Project;
-import com.cleanup.todoc.model.entities.Task;
+import com.cleanup.todoc.model.entity.Project;
+import com.cleanup.todoc.model.entity.Task;
 
 import java.util.List;
 
