@@ -23,6 +23,7 @@ public class DeleteTaskItemTouchHelperSimpleCallback extends ItemTouchHelper.Sim
 
     private final MainViewModel viewModel;
     private final TaskAdapter adapter;
+    private final RecyclerView taskRecyclerview;
     private final FloatingActionButton fabAddTask;
     private final Context context;
 
@@ -31,17 +32,22 @@ public class DeleteTaskItemTouchHelperSimpleCallback extends ItemTouchHelper.Sim
             int dragDirs, int swipeDirs,
             MainViewModel viewModel,
             TaskAdapter adapter,
+            RecyclerView taskRecyclerview,
             FloatingActionButton fabAddTask
     ) {
         super(dragDirs, swipeDirs);
         this.viewModel = viewModel;
         this.adapter = adapter;
+        this.taskRecyclerview = taskRecyclerview;
         this.fabAddTask = fabAddTask;
         context = fabAddTask.getContext();
     }
 
     @Override
-    public boolean onMove(@NonNull @NotNull RecyclerView recyclerView, @NonNull @NotNull RecyclerView.ViewHolder viewHolder, @NonNull @NotNull RecyclerView.ViewHolder target) {
+    public boolean onMove(@NonNull @NotNull RecyclerView recyclerView,
+                          @NonNull @NotNull RecyclerView.ViewHolder viewHolder,
+                          @NonNull @NotNull RecyclerView.ViewHolder target
+    ) {
         return false;
     }
 
@@ -56,13 +62,14 @@ public class DeleteTaskItemTouchHelperSimpleCallback extends ItemTouchHelper.Sim
 
         String snackMessage = "Tâche supprimée";
 
+
         Snackbar.make(taskItem, snackMessage, Snackbar.LENGTH_LONG)
                 .setBackgroundTint(context.getResources().getColor(R.color.colorPrimaryDark))
                 .setAnchorView(fabAddTask)
                 .setActionTextColor(context.getResources().getColor(android.R.color.holo_green_light))
                 .setAction("ANNULER", v -> {
                     viewModel.insertTask(taskToDelete);
-                    if (position == 0);
+                    if (position == 0) taskRecyclerview.postOnAnimation(this::scrollToFirstPosition);
                 }
         ).show();
     }
@@ -98,5 +105,9 @@ public class DeleteTaskItemTouchHelperSimpleCallback extends ItemTouchHelper.Sim
         deleteIcon.draw(c);
 
         super.onChildDraw(c, recyclerView, viewHolder, dX / 4, dY, actionState, isCurrentlyActive);
+    }
+
+    private void scrollToFirstPosition() {
+        taskRecyclerview.smoothScrollToPosition(Integer.MIN_VALUE);
     }
 }

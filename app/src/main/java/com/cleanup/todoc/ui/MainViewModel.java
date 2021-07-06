@@ -9,6 +9,7 @@ import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.cleanup.todoc.R;
 import com.cleanup.todoc.Utils;
 import com.cleanup.todoc.model.entity.Project;
 import com.cleanup.todoc.model.entity.Task;
@@ -32,9 +33,9 @@ public class MainViewModel extends ViewModel {
     private final MutableLiveData<Utils.SortMethod> sortMethodMutableLiveData;
     private final MediatorLiveData<List<Task>> sortedListForDisplayMediatorLiveData = new MediatorLiveData<>();
     private final MutableLiveData<TaskListViewState> taskListViewStateMutableLiveData;
-    private final MutableLiveData<Boolean> taskNameErrorMutableLiveData;
-    private final MutableLiveData<String> taskCreatedEditedMsgMutableLiveData = new MutableLiveData<>();
-    private final MutableLiveData<Boolean> dialogDismissMutableLiveData;
+    private boolean emptyTaskNameError;
+    private MutableLiveData<String> taskCreatedEditedMsg = new MutableLiveData<>();
+    private boolean dialogDismiss;
 
 
     public MainViewModel(ProjectRepository projectRepository, TaskRepository taskRepository) {
@@ -48,8 +49,6 @@ public class MainViewModel extends ViewModel {
         sortedListForDisplayMediatorLiveData.addSource(allTasksProjectAZ, tasks -> sortTaskList());
         sortedListForDisplayMediatorLiveData.addSource(allTasksOldNew, tasks -> sortTaskList());
         taskListViewStateMutableLiveData = new MutableLiveData<>(new TaskListViewState(View.VISIBLE, View.GONE));
-        taskNameErrorMutableLiveData = new MutableLiveData<>(false);
-        dialogDismissMutableLiveData = new MutableLiveData<>(false);
     }
 
 
@@ -117,6 +116,10 @@ public class MainViewModel extends ViewModel {
         if (sortedTaskList != null) setTaskListViewState(sortedTaskList);
     }
 
+    public LiveData<List<Task>> getSortedList() {
+        return sortedListForDisplayMediatorLiveData;
+    }
+
     private void setTaskListViewState(List<Task> sortedTaskList) {
         boolean sortedTaskListEmpty = sortedTaskList.isEmpty();
 
@@ -128,15 +131,13 @@ public class MainViewModel extends ViewModel {
         taskListViewStateMutableLiveData.setValue(taskListViewState);
     }
 
-    public LiveData<List<Task>> getSortedList() {
-        return sortedListForDisplayMediatorLiveData;
-    }
-
     public LiveData<TaskListViewState> getTaskListViewState() {
         return taskListViewStateMutableLiveData;
     }
 
     public void createEditTask(Task taskToEdit, EditText dialogEditText, Spinner dialogSpinner) {
+        emptyTaskNameError = false;
+        taskCreatedEditedMsg.setValue(null);
         // If dialog is open
         if (dialogEditText != null && dialogSpinner != null) {
             // Get the name of the task
@@ -148,21 +149,20 @@ public class MainViewModel extends ViewModel {
                 taskProject = (Project) dialogSpinner.getSelectedItem();
             }
 
-            // If a name has not been set
-            if (taskName.trim().isEmpty()) {
-                taskNameErrorMutableLiveData.setValue(true);
+            if (taskName.trim().isEmpty()) { // If a name has not been set
+                emptyTaskNameError = true;
+                dialogDismiss = false;
             } else if (taskProject != null) { // If both project and name of the task have been set
                 long taskId;
                 long timeStamp;
                 long projectId = taskProject.getId();
 
-                String taskCreatedEditedMsg;
                 if (taskToEdit == null) {
                     timeStamp = new Date().getTime();
 
                     //Manage the creation in the list of tasks
                     insertTask(new Task(projectId, taskName, timeStamp));
-                    taskCreatedEditedMsg = "Tâche ajoutée";
+                    taskCreatedEditedMsg.setValue("Tâche ajoutée");
                 } else {
                     taskId = taskToEdit.getId();
                     timeStamp = taskToEdit.getCreationTimestamp();
@@ -171,32 +171,51 @@ public class MainViewModel extends ViewModel {
                     boolean taskNotModified = taskName.equals(taskToEdit.getName()) &&
                             projectId == taskToEdit.getProjectId();
                     if (taskNotModified) {
-                        taskCreatedEditedMsg = "Tâche non modifiée";
+                        taskCreatedEditedMsg.setValue("Aucune tâche modifiée");
                     } else {
                         updateTask(new Task(taskId, projectId, taskName, timeStamp));
-                        taskCreatedEditedMsg = "Tâche modifiée";
+                        taskCreatedEditedMsg.setValue("Tâche modifiée");
                     }
                 }
-                taskCreatedEditedMsgMutableLiveData.setValue(taskCreatedEditedMsg);
-                taskNameErrorMutableLiveData.setValue(false);
-                dialogDismissMutableLiveData.setValue(true); // Will null widgets and remove observers
+                emptyTaskNameError = false;
+                dialogDismiss = true; // Will null widgets and remove observers
             } else { // If name has been set, but project has not been set (this should never occur)
-                dialogDismissMutableLiveData.setValue(true);
+                dialogDismiss = true;
             }
         } else { // If dialog is already closed
-            dialogDismissMutableLiveData.setValue(true);
+            dialogDismiss = true;
         }
     }
 
-    public MutableLiveData<Boolean> getTaskNameError() {
-        return taskNameErrorMutableLiveData;
+    public boolean getEmptyTaskNameError() {
+        return emptyTaskNameError;
     }
 
     public LiveData<String> getTaskCreatedEditedMsg() {
-        return taskCreatedEditedMsgMutableLiveData;
+        return taskCreatedEditedMsg;
     }
 
-    public MutableLiveData<Boolean> getDialogDismiss() {
-        return dialogDismissMutableLiveData;
+    public boolean getDialogDismiss() {
+        return dialogDismiss;
+    }
+
+    public AddEditTaskDialogViewState getAddEditDialogViewState(Task taskToEdit) {
+        int dialogTitle;
+        String dialogEditText;
+        int projectIndex;
+        int positiveBtnTxt;
+        if (taskToEdit != null) {
+            dialogTitle = R.string.edit_task;
+            dialogEditText = taskToEdit.getName();
+            Project taskProject = projectsMappedById.getValue().get(taskToEdit.getProjectId());
+            projectIndex = allProjects.getValue().indexOf(taskProject);
+            positiveBtnTxt = R.string.edit;
+        } else {
+            dialogTitle = R.string.add_task;
+            dialogEditText = "";
+            projectIndex = 0;
+            positiveBtnTxt = R.string.add;
+        }
+        return new AddEditTaskDialogViewState(dialogTitle, dialogEditText, projectIndex, positiveBtnTxt);
     }
 }

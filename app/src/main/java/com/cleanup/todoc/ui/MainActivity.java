@@ -155,7 +155,8 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.EditT
      */
     private void setItemTouchHelper(RecyclerView taskRecyclerview, TaskAdapter adapter) {
         new ItemTouchHelper(new DeleteTaskItemTouchHelperSimpleCallback(0,
-                ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT, viewModel, adapter, fabAddTask)
+                ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT,
+                viewModel, adapter, taskRecyclerview, fabAddTask)
         ).attachToRecyclerView(taskRecyclerview);
     }
 
@@ -224,20 +225,16 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.EditT
     private AlertDialog getAddEditTaskDialog() {
         final AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this, R.style.Dialog);
 
+        AddEditTaskDialogViewState viewState = viewModel.getAddEditDialogViewState(taskToEdit);
+
         DialogAddTaskBinding dialogBinding = DialogAddTaskBinding.inflate(getLayoutInflater());
-        alertBuilder.setTitle(R.string.add_task);
         alertBuilder.setView(dialogBinding.getRoot());
+        alertBuilder.setTitle(viewState.getDialogTitle());
         dialogEditText = dialogBinding.txtTaskName;
         dialogSpinner = dialogBinding.projectSpinner;
-        if (taskToEdit != null) {
-            dialogEditText.setText(taskToEdit.getName());
-            Project taskProject = viewModel.getProjectsMappedById().getValue().get(taskToEdit.getProjectId());
-            int projectIndex = viewModel.getAllProjects().getValue().indexOf(taskProject);
-            dialogSpinner.post(() -> dialogSpinner.setSelection(projectIndex));
-            alertBuilder.setPositiveButton("Modifier", null);
-        } else {
-            alertBuilder.setPositiveButton(R.string.add, null);
-        }
+        dialogEditText.setText(viewState.getDialogEditText());
+        dialogSpinner.post(() -> dialogSpinner.setSelection(viewState.getProjectIndex()));
+        alertBuilder.setPositiveButton(viewState.getPositiveBtnTxt(), null);
         alertBuilder.setOnDismissListener(dialogInterface -> {
             dialogEditText = null;
             dialogSpinner = null;
@@ -272,28 +269,24 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.EditT
      */
     @SuppressLint("ShowToast")
     private void onPositiveButtonClick(DialogInterface dialogInterface) {
+        // VM manages the task adding or editing and gives all needed values for the view
         viewModel.createEditTask(taskToEdit, dialogEditText, dialogSpinner);
 
-        boolean taskNameError = viewModel.getTaskNameError().getValue();
-        if (dialogEditText != null && taskNameError) {
-            dialogEditText.setError(getString(R.string.empty_task_name));
-        } else if (!taskNameError) {
-            String snackMsg = viewModel.getTaskCreatedEditedMsg().getValue();
-            Snackbar.make(fabAddTask, snackMsg, Snackbar.LENGTH_SHORT)
-                    .setBackgroundTint(getResources().getColor(R.color.colorPrimaryDark))
-                    .setAnchorView(fabAddTask).show();
-        }
+        // emptyTaskNameError stays false if dialogEditText is null
+        boolean emptyTaskNameError = viewModel.getEmptyTaskNameError();
+        if (emptyTaskNameError) dialogEditText.setError(getString(R.string.empty_task_name));
 
-        boolean dialogDismiss = viewModel.getDialogDismiss().getValue();
-        if (dialogDismiss) {
-            dialogInterface.dismiss();
-            removeAddTaskDialogObservers();
-        }
-    }
+        viewModel.getTaskCreatedEditedMsg().observe(this, s -> {
+            if (s != null) {
+                Snackbar.make(fabAddTask, s, Snackbar.LENGTH_SHORT)
+                        .setBackgroundTint(getResources().getColor(R.color.colorPrimaryDark))
+                        .setAnchorView(fabAddTask)
+                .show();
+            }
+            viewModel.getTaskCreatedEditedMsg().removeObservers(MainActivity.this);
+        });
 
-    private void removeAddTaskDialogObservers() {
-        viewModel.getTaskNameError().removeObservers(this);
-        viewModel.getTaskCreatedEditedMsg().removeObservers(this);
-        viewModel.getDialogDismiss().removeObservers(this);
+        boolean dialogDismiss = viewModel.getDialogDismiss();
+        if (dialogDismiss) dialogInterface.dismiss();
     }
 }
