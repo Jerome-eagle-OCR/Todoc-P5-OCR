@@ -51,93 +51,157 @@ public class MainViewModel extends ViewModel {
         taskListViewStateMutableLiveData = new MutableLiveData<>(new TaskListViewState(View.VISIBLE, View.GONE));
     }
 
-
+    /**
+     * Insert a new project in database
+     * @param project the project to insert
+     */
     public void insertProject(Project project) {
         projectRepository.insert(project);
     }
 
+    /**
+     * Delete a project in database
+     * @param project the project to delete
+     */
     public void deleteProject(Project project) {
         projectRepository.delete(project);
     }
 
+    /**
+     * Get all the projects that are in database
+     * @return the list of projects
+     */
     public LiveData<List<Project>> getAllProjects() {
         return allProjects;
     }
 
+    /**
+     * Get all the projects that are in database
+     * @return the hash table <K:id of project, V:the project> of projects
+     */
     public LiveData<HashMap<Long, Project>> getProjectsMappedById() {
         return projectsMappedById;
     }
 
-
+    /**
+     * Insert a new task in database
+     * @param task the task to insert
+     */
     public void insertTask(Task task) {
         taskRepository.insert(task);
     }
 
+    /**
+     * Update a task in database
+     * @param task the task to update
+     */
     public void updateTask(Task task) {
         taskRepository.update(task);
     }
 
+    /**
+     * Delete a task in database
+     * @param task the task to delete
+     */
     public void deleteTask(Task task) {
         taskRepository.delete(task);
     }
 
+    /**
+     * Set the sorting method for the task list in the mutable live data and launch the sorting
+     * @param sortMethod the sorting method selected
+     */
     public void setSorting(Utils.SortMethod sortMethod) {
-        if (sortMethod != null) {
+        if (sortMethod != null) { // Useful when starting the app
             this.sortMethodMutableLiveData.setValue(sortMethod);
             sortTaskList();
         }
     }
 
+    /**
+     * Get the active sort method
+     * @return the active sort method
+     */
     public LiveData<Utils.SortMethod> getSortMethod() {
         return sortMethodMutableLiveData;
     }
 
+    /**
+     * Sort the task list depending on active sorting method and set related live data and
+     * launch view state setting
+     */
     private void sortTaskList() {
         List<Task> sortedTaskList = new ArrayList<>();
         Utils.SortMethod sorting = sortMethodMutableLiveData.getValue();
 
-        switch (sorting) {
+        switch (sorting) { // Method is not called when sort method is null
             case OLD_FIRST:
             case NONE:
-                sortedTaskList = allTasksOldNew.getValue();
+                sortedTaskList = allTasksOldNew.getValue(); // List is pre-sorted from SQL request
                 break;
             case RECENT_FIRST:
                 sortedTaskList.addAll(allTasksOldNew.getValue());
-                Collections.reverse(sortedTaskList);
+                Collections.reverse(sortedTaskList); // Pre-sorted list is reversed
                 break;
             case PROJECT_AZ:
-                sortedTaskList.addAll(allTasksProjectAZ.getValue());
-                break;
+                sortedTaskList.addAll(allTasksProjectAZ.getValue()); // List is computed in repository
+                break;                                               // from embedded project list
             default:
                 throw new IllegalStateException("Unexpected value: " + sortMethodMutableLiveData);
         }
 
+        // Set the live data with the properly sorted list
         sortedListForDisplayMediatorLiveData.setValue(sortedTaskList);
+
+        // Set task list view state depending on task list empty or not (null testing to avoid trouble)
         if (sortedTaskList != null) setTaskListViewState(sortedTaskList);
     }
 
+    /**
+     * Get the list of tasks properly sorted according to active sort method
+     * @return the sorted task list
+     */
     public LiveData<List<Task>> getSortedList() {
         return sortedListForDisplayMediatorLiveData;
     }
 
+    /**
+     * Create a view state based on sorted task list empty or not and set related live data
+     * @param sortedTaskList the sorted task list
+     */
     private void setTaskListViewState(List<Task> sortedTaskList) {
         boolean sortedTaskListEmpty = sortedTaskList.isEmpty();
 
         int taskListVisibility = sortedTaskListEmpty ? View.GONE : View.VISIBLE; //taskList not visible when list is empty and vice versa
         int noTaskLblVisibility = sortedTaskListEmpty ? View.VISIBLE : View.GONE; //noTaskLbl visible when list is empty and vice versa
 
+        // Create a new view state
         TaskListViewState taskListViewState = new TaskListViewState(taskListVisibility, noTaskLblVisibility);
 
+        // Set the live data with the freshly made view state
         taskListViewStateMutableLiveData.setValue(taskListViewState);
     }
 
+    /**
+     * Get task list view state based on sorted task list empty or not
+     * @return the view state
+     */
     public LiveData<TaskListViewState> getTaskListViewState() {
         return taskListViewStateMutableLiveData;
     }
 
+    /**
+     * Manage creation or edition or nothing of a task depending on taskToEdit value (null or
+     * containing an existing task and if something has been changed)
+     * Also set emptyTaskNameError, taskCreatedEditedMsg and dialogDismiss
+     * @param taskToEdit the task to edit (or null if a task has to be created)
+     * @param dialogEditText the widget containing the task name
+     * @param dialogSpinner the widget containing the project associated to the task
+     */
     public void createEditTask(Task taskToEdit, EditText dialogEditText, Spinner dialogSpinner) {
         emptyTaskNameError = false;
         taskCreatedEditedMsg.setValue(null);
+        dialogDismiss = false;
         // If dialog is open
         if (dialogEditText != null && dialogSpinner != null) {
             // Get the name of the task
@@ -151,7 +215,6 @@ public class MainViewModel extends ViewModel {
 
             if (taskName.trim().isEmpty()) { // If a name has not been set
                 emptyTaskNameError = true;
-                dialogDismiss = false;
             } else if (taskProject != null) { // If both project and name of the task have been set
                 long taskId;
                 long timeStamp;
@@ -177,7 +240,6 @@ public class MainViewModel extends ViewModel {
                         taskCreatedEditedMsg.setValue("Tâche modifiée");
                     }
                 }
-                emptyTaskNameError = false;
                 dialogDismiss = true; // Will null widgets and remove observers
             } else { // If name has been set, but project has not been set (this should never occur)
                 dialogDismiss = true;
@@ -187,35 +249,57 @@ public class MainViewModel extends ViewModel {
         }
     }
 
+    /**
+     * Get the empty task name error boolean (true in case of an error)
+     * @return the empty task name error boolean
+     */
     public boolean getEmptyTaskNameError() {
         return emptyTaskNameError;
     }
 
+    /**
+     * Get the task created or edited message to show in a snackbar when action is done
+     * @return the task created or edited message
+     */
     public LiveData<String> getTaskCreatedEditedMsg() {
         return taskCreatedEditedMsg;
     }
 
+    /**
+     * Get the dialog dismiss boolean (true for dialog dismissing)
+     * @return dialog dismiss boolean
+     */
     public boolean getDialogDismiss() {
         return dialogDismiss;
     }
 
+    /**
+     * Get the view state created to set properly the add, or edit, task dialog details
+     * @param taskToEdit the task to edit (or null if a task has to be created)
+     * @return the created view state
+     */
     public AddEditTaskDialogViewState getAddEditDialogViewState(Task taskToEdit) {
-        int dialogTitle;
-        String dialogEditText;
-        int projectIndex;
-        int positiveBtnTxt;
+        int dialogTitle; // The title of the dialog (add or edit purpose)
+        String dialogEditText; // The task name (empty or pre-filled)
+        int projectIndex; // The project to associate (first in list or pre-selected)
+        int positiveBtnTxt; // The text for the dialog positive button (add or edit)
+
+        // If editing is involved
         if (taskToEdit != null) {
             dialogTitle = R.string.edit_task;
             dialogEditText = taskToEdit.getName();
             Project taskProject = projectsMappedById.getValue().get(taskToEdit.getProjectId());
             projectIndex = allProjects.getValue().indexOf(taskProject);
             positiveBtnTxt = R.string.edit;
-        } else {
+        }
+        // If adding is involved
+        else {
             dialogTitle = R.string.add_task;
             dialogEditText = "";
             projectIndex = 0;
             positiveBtnTxt = R.string.add;
         }
+        // Create and return a new adhoc view state
         return new AddEditTaskDialogViewState(dialogTitle, dialogEditText, projectIndex, positiveBtnTxt);
     }
 }
