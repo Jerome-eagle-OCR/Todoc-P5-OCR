@@ -14,52 +14,50 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.cleanup.todoc.databinding.ItemTaskBinding;
 import com.cleanup.todoc.model.entity.Project;
-import com.cleanup.todoc.model.entity.Task;
+import com.cleanup.todoc.model.entity.relation.TaskWithProject;
 
 import org.jetbrains.annotations.NotNull;
-
-import java.util.HashMap;
 
 /**
  * <p>Adapter which handles the list of tasks to display in the dedicated RecyclerView.</p>
  *
  * @author Gaëtan HERFRAY / Modified by Jérôme Rigault
  */
-public class TaskAdapter extends ListAdapter<Task, TaskAdapter.TaskViewHolder> {
+public class TaskAdapter extends ListAdapter<TaskWithProject, TaskAdapter.TaskViewHolder> {
     /**
-     * The listener for when a task needs to be deleted
+     * The listener for when a task needs to be edited
      */
     @NonNull
     private final EditTaskListener editTaskListener;
-    private HashMap<Long, Project> projectHashMap;
 
     /**
      * Instantiates a new TaskAdapter.
-     *
      */
     TaskAdapter(@NonNull final EditTaskListener editTaskListener) {
         super(DIFF_CALLBACK);
         this.editTaskListener = editTaskListener;
     }
 
-    private static final DiffUtil.ItemCallback<Task> DIFF_CALLBACK = new DiffUtil.ItemCallback<Task>() {
+    private static final DiffUtil.ItemCallback<TaskWithProject> DIFF_CALLBACK = new DiffUtil.ItemCallback<TaskWithProject>() {
         @Override
-        public boolean areItemsTheSame(@NonNull @NotNull Task oldItem, @NonNull @NotNull Task newItem) {
-            return oldItem.getId() == newItem.getId();
+        public boolean areItemsTheSame(@NonNull @NotNull TaskWithProject oldItem, @NonNull @NotNull TaskWithProject newItem) {
+            return oldItem.task.getId() == newItem.task.getId();
         }
 
         @Override
-        public boolean areContentsTheSame(@NonNull @NotNull Task oldItem, @NonNull @NotNull Task newItem) {
-            return (oldItem.getProjectId() == newItem.getProjectId() &&
-                    oldItem.getName().equals(newItem.getName()) &&
-                    oldItem.getCreationTimestamp() == newItem.getCreationTimestamp());
+        public boolean areContentsTheSame(@NonNull @NotNull TaskWithProject oldItem, @NonNull @NotNull TaskWithProject newItem) {
+            return (oldItem.task.getName().equals(newItem.task.getName()) &&
+                    oldItem.task.getCreationTimestamp() == newItem.task.getCreationTimestamp() &&
+                    oldItem.task.getProjectId() == newItem.task.getProjectId());
         }
+
     };
 
     @NonNull
     @Override
     public TaskViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int viewType) {
-        ItemTaskBinding itemTaskBinding = ItemTaskBinding.inflate(LayoutInflater.from(viewGroup.getContext()), viewGroup, false);
+        ItemTaskBinding itemTaskBinding = ItemTaskBinding.inflate(LayoutInflater.from(viewGroup.getContext()),
+                viewGroup, false);
         return new TaskViewHolder(itemTaskBinding, editTaskListener);
     }
 
@@ -69,21 +67,13 @@ public class TaskAdapter extends ListAdapter<Task, TaskAdapter.TaskViewHolder> {
     }
 
     /**
-     * Setter to submit up to date projects hash map to retrieve easily a project from its id
-     * Useful for bind(Task) method to display proper project name and color for each task
-     * @param projects
-     */
-    public void submitProjects(HashMap<Long, Project> projects) {
-        this.projectHashMap = projects;
-    }
-
-    /**
      * Getter to retrieve any task from its position in the list adapter
      * Useful for the ItemTouchHelper implemented in MainActivity, to delete a task swiping the item
+     *
      * @param position
      * @return
      */
-    public Task getTaskAtPosition(int position) {
+    public TaskWithProject getTaskAtPosition(int position) {
         return getItem(position);
     }
 
@@ -96,13 +86,13 @@ public class TaskAdapter extends ListAdapter<Task, TaskAdapter.TaskViewHolder> {
          *
          * @param task the task that needs to be edited
          */
-        void onEditTask(Task task);
+        void onEditTask(TaskWithProject task);
     }
 
     /**
      * <p>ViewHolder for task items in the tasks list</p>
      *
-     * @author Gaëtan HERFRAY
+     * @author Gaëtan HERFRAY / Modified by Jérôme Rigault
      */
     class TaskViewHolder extends RecyclerView.ViewHolder {
         /**
@@ -121,11 +111,6 @@ public class TaskAdapter extends ListAdapter<Task, TaskAdapter.TaskViewHolder> {
         private final TextView lblProjectName;
 
         /**
-         * The delete icon
-         */
-        private final AppCompatImageView imgDelete;
-
-        /**
          * The listener for when a task needs to be deleted
          */
         private final EditTaskListener editTaskListener;
@@ -133,7 +118,7 @@ public class TaskAdapter extends ListAdapter<Task, TaskAdapter.TaskViewHolder> {
         /**
          * Instantiates a new TaskViewHolder.
          *
-         * @param itemTaskBinding    the binding of the task item
+         * @param itemTaskBinding  the binding of the task item
          * @param editTaskListener the listener for when a task needs to be deleted to set
          */
         TaskViewHolder(@NonNull ItemTaskBinding itemTaskBinding, @NonNull EditTaskListener editTaskListener) {
@@ -144,12 +129,11 @@ public class TaskAdapter extends ListAdapter<Task, TaskAdapter.TaskViewHolder> {
             imgProject = itemTaskBinding.imgProject;
             lblTaskName = itemTaskBinding.lblTaskName;
             lblProjectName = itemTaskBinding.lblProjectName;
-            imgDelete = itemTaskBinding.imgDelete;
 
             itemView.setOnLongClickListener(view -> {
                 final Object tag = view.getTag();
-                if (tag instanceof Task) {
-                    TaskViewHolder.this.editTaskListener.onEditTask((Task) tag);
+                if (tag instanceof TaskWithProject) {
+                    TaskViewHolder.this.editTaskListener.onEditTask((TaskWithProject) tag);
                 }
                 return false;
             });
@@ -158,14 +142,13 @@ public class TaskAdapter extends ListAdapter<Task, TaskAdapter.TaskViewHolder> {
         /**
          * Binds a task to the item view.
          *
-         * @param task the task to bind in the item view
+         * @param taskWithProject the task to bind in the item view
          */
-        void bind(Task task) {
-            lblTaskName.setText(task.getName());
-            itemView.setTag(task);
+        void bind(TaskWithProject taskWithProject) {
+            lblTaskName.setText(taskWithProject.task.getName());
+            itemView.setTag(taskWithProject);
 
-            final long projectId = task.getProjectId();
-            final Project taskProject = projectHashMap.get(projectId);
+            final Project taskProject = taskWithProject.project;
             if (taskProject != null) {
                 imgProject.setImageTintList(ColorStateList.valueOf(taskProject.getColor()));
                 lblProjectName.setText(taskProject.getName());
@@ -173,7 +156,6 @@ public class TaskAdapter extends ListAdapter<Task, TaskAdapter.TaskViewHolder> {
                 imgProject.setVisibility(View.INVISIBLE);
                 lblProjectName.setText("");
             }
-
         }
     }
 }

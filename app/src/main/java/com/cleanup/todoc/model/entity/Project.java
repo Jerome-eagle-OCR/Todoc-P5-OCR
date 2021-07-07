@@ -9,7 +9,7 @@ import androidx.room.PrimaryKey;
 /**
  * <p>Models for project in which tasks are included.</p>
  *
- * @author Gaëtan HERFRAY
+ * @author Gaëtan HERFRAY / Modified by Jérôme Rigault
  */
 @Entity(tableName = "project_table")
 public class Project {
@@ -81,5 +81,25 @@ public class Project {
     @NonNull
     public String toString() {
         return getName();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Project project = (Project) o;
+
+        if (getId() != project.getId()) return false;
+        if (getColor() != project.getColor()) return false;
+        return getName().equals(project.getName());
+    }
+
+    @Override
+    public int hashCode() {
+        int result = (int) (getId() ^ (getId() >>> 32));
+        result = 31 * result + getName().hashCode();
+        result = 31 * result + getColor();
+        return result;
     }
 }

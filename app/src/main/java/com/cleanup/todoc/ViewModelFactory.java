@@ -19,8 +19,8 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
         if (factory == null) {
             synchronized (ViewModelFactory.class) {
                     factory = new ViewModelFactory(
-                            TodocApplication.sDependencyContainer.projectRepository,
-                            TodocApplication.sDependencyContainer.taskRepository
+                            TodocApplication.sDependencyContainer.getProjectRepository(),
+                            TodocApplication.sDependencyContainer.getTaskRepository()
                     );
             }
         }

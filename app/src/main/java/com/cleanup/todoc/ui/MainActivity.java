@@ -26,7 +26,7 @@ import com.cleanup.todoc.ViewModelFactory;
 import com.cleanup.todoc.databinding.ActivityMainBinding;
 import com.cleanup.todoc.databinding.DialogAddTaskBinding;
 import com.cleanup.todoc.model.entity.Project;
-import com.cleanup.todoc.model.entity.Task;
+import com.cleanup.todoc.model.entity.relation.TaskWithProject;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -36,7 +36,7 @@ import java.util.List;
  * <p>Home activity of the application which is displayed when the user opens the app.</p>
  * <p>Displays the list of tasks.</p>
  *
- * @author Gaëtan HERFRAY
+ * @author Gaëtan HERFRAY / Modified by Jérôme Rigault
  */
 public class MainActivity extends AppCompatActivity implements TaskAdapter.EditTaskListener {
 
@@ -46,9 +46,9 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.EditT
     private Project[] mProjects;
 
     /**
-     * List of all current tasks of the application
+     * List of all current tasks, including bound project, of the application
      */
-    private List<Task> mTasks;
+    private List<TaskWithProject> mTasks;
 
     /**
      * The adapter which handles the list of tasks
@@ -82,17 +82,17 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.EditT
      * Task to edit using the same dialog as for creating a task
      */
     @Nullable
-    private Task taskToEdit = null;
+    private TaskWithProject taskToEdit = null;
 
-    private ActivityMainBinding mBinding;
+    private ActivityMainBinding binding;
     private MainViewModel viewModel;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mBinding = ActivityMainBinding.inflate(getLayoutInflater());
-        setContentView(mBinding.getRoot());
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
         init();
     }
@@ -104,11 +104,11 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.EditT
         viewModel = new ViewModelProvider(this, ViewModelFactory.getInstance()).get(MainViewModel.class);
 
         // The floating action button to add a new task
-        fabAddTask = mBinding.fabAddTask;
+        fabAddTask = binding.fabAddTask;
         fabAddTask.setOnClickListener(view1 -> showAddEditTaskDialog());
 
         // The RecyclerView which displays the list of tasks
-        final RecyclerView taskRecyclerview = mBinding.listTasks;
+        final RecyclerView taskRecyclerview = binding.listTasks;
         taskRecyclerview.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         adapter = new TaskAdapter(this);
         taskRecyclerview.setAdapter(adapter);
@@ -128,17 +128,17 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.EditT
             taskRecyclerview.smoothScrollToPosition(Integer.MIN_VALUE);
         });
 
-        // Submit up to date projects to the task list adapter
+/*        // Submit up to date projects to the task list adapter
         viewModel.getProjectsMappedById().observe(this, longProjectHashMap -> {
             adapter.submitProjects(longProjectHashMap);
-        });
+        });*/
 
         // Observe up to date project list to populate project spinner
         viewModel.getAllProjects().observe(this,
                 projects -> mProjects = projects.toArray(new Project[0]));
 
         // Manage the display depending on whether the list is empty or not; viewModel handles it
-        TextView noTaskLbl = mBinding.lblNoTask;
+        TextView noTaskLbl = binding.lblNoTask;
         viewModel.getTaskListViewState().observe(this, taskListViewState -> {
             if (taskListViewState != null) {
                 noTaskLbl.setVisibility(taskListViewState.getNoTaskLblVisibility());
@@ -154,8 +154,7 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.EditT
      * @param adapter          the adapter which handles the list of tasks
      */
     private void setItemTouchHelper(RecyclerView taskRecyclerview, TaskAdapter adapter) {
-        new ItemTouchHelper(new DeleteTaskItemTouchHelperSimpleCallback(0,
-                ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT,
+        new ItemTouchHelper(new DeleteTaskItemTouchHelperSimpleCallback(0, ItemTouchHelper.RIGHT,
                 viewModel, adapter, taskRecyclerview, fabAddTask)
         ).attachToRecyclerView(taskRecyclerview);
     }
@@ -197,11 +196,11 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.EditT
     /**
      * Called when task item is long clicked
      *
-     * @param task the task that needs to be edited
+     * @param taskWithProject the task that needs to be edited
      */
     @Override
-    public void onEditTask(Task task) {
-        taskToEdit = task;
+    public void onEditTask(TaskWithProject taskWithProject) {
+        taskToEdit = taskWithProject;
         showAddEditTaskDialog();
     }
 
@@ -263,28 +262,27 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.EditT
     }
 
     /**
-     * Called when the user clicks on the positive button of the Create Task Dialog.
+     * Called when the user clicks on the positive button of the Create/Edit Task Dialog.
      *
      * @param dialogInterface the current displayed dialog
      */
     @SuppressLint("ShowToast")
     private void onPositiveButtonClick(DialogInterface dialogInterface) {
-        // VM manages the task adding or editing and gives all needed values for the view
+        // VM manages the task adding or editing, and sets all needed values for the view
         viewModel.createEditTask(taskToEdit, dialogEditText, dialogSpinner);
 
-        // emptyTaskNameError stays false if dialogEditText is null
+        // emptyTaskNameError is false if dialogEditText is null
         boolean emptyTaskNameError = viewModel.getEmptyTaskNameError();
         if (emptyTaskNameError) dialogEditText.setError(getString(R.string.empty_task_name));
 
-        viewModel.getTaskCreatedEditedMsg().observe(this, s -> {
-            if (s != null) {
-                Snackbar.make(fabAddTask, s, Snackbar.LENGTH_SHORT)
-                        .setBackgroundTint(getResources().getColor(R.color.colorPrimaryDark))
-                        .setAnchorView(fabAddTask)
-                .show();
-            }
-            viewModel.getTaskCreatedEditedMsg().removeObservers(MainActivity.this);
-        });
+        // Snack the taskCreatedEditedMsg if not empty
+        String snackThis = viewModel.getTaskCreatedEditedMsg();
+        if (!snackThis.equals("")) {
+            Snackbar.make(fabAddTask, snackThis, Snackbar.LENGTH_SHORT)
+                    .setBackgroundTint(getResources().getColor(R.color.colorPrimaryDark))
+                    .setAnchorView(fabAddTask)
+            .show();
+        }
 
         boolean dialogDismiss = viewModel.getDialogDismiss();
         if (dialogDismiss) dialogInterface.dismiss();

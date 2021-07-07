@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.cleanup.todoc.R;
-import com.cleanup.todoc.model.entity.Task;
+import com.cleanup.todoc.model.entity.relation.TaskWithProject;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -57,21 +57,25 @@ public class DeleteTaskItemTouchHelperSimpleCallback extends ItemTouchHelper.Sim
         int position = viewHolder.getAdapterPosition();
         View taskItem = viewHolder.itemView;
 
-        Task taskToDelete = adapter.getTaskAtPosition(position);
-        viewModel.deleteTask(taskToDelete);
+        if (direction == ItemTouchHelper.RIGHT) {
+            TaskWithProject taskToDelete = adapter.getTaskAtPosition(position);
+            viewModel.deleteTask(taskToDelete.task);
 
-        String snackMessage = "Tâche supprimée";
+            String snackMessage = "Tâche supprimée";
 
-
-        Snackbar.make(taskItem, snackMessage, Snackbar.LENGTH_LONG)
-                .setBackgroundTint(context.getResources().getColor(R.color.colorPrimaryDark))
-                .setAnchorView(fabAddTask)
-                .setActionTextColor(context.getResources().getColor(android.R.color.holo_green_light))
-                .setAction("ANNULER", v -> {
-                    viewModel.insertTask(taskToDelete);
-                    if (position == 0) taskRecyclerview.postOnAnimation(this::scrollToFirstPosition);
-                }
-        ).show();
+            Snackbar.make(taskItem, snackMessage, Snackbar.LENGTH_LONG)
+                    .setBackgroundTint(context.getResources().getColor(R.color.colorPrimaryDark))
+                    .setAnchorView(fabAddTask)
+                    .setActionTextColor(context.getResources().getColor(android.R.color.holo_green_light))
+                    .setAction("ANNULER", v -> {
+                        if (position == 0) {
+                            adapter.notifyItemChanged(Integer.MIN_VALUE);
+                            taskRecyclerview.postOnAnimation(this::scrollToFirstPosition);
+                        }
+                        viewModel.insertTask(taskToDelete.task);
+                    }
+            ).show();
+        }
     }
 
     @Override
@@ -81,28 +85,30 @@ public class DeleteTaskItemTouchHelperSimpleCallback extends ItemTouchHelper.Sim
                             float dX, float dY, int actionState, boolean isCurrentlyActive
     ) {
         View taskItem = viewHolder.itemView;
-        ColorDrawable swipeBkgnd = new ColorDrawable(context.getResources().getColor(R.color.colorAccent));
+        ColorDrawable swipeRightBkgnd = new ColorDrawable(context.getResources().getColor(R.color.colorAccent));
+        ColorDrawable swipeLeftBkgnd = new ColorDrawable(context.getResources().getColor(android.R.color.holo_green_dark));
         Drawable deleteIcon = AppCompatResources.getDrawable(taskItem.getContext(), R.drawable.ic_delete);
 
         int iconMargin = (taskItem.getHeight() - deleteIcon.getIntrinsicHeight()) / 2;
 
         if (dX > 0) {
-            swipeBkgnd.setBounds(taskItem.getLeft(), taskItem.getTop(),
+            swipeRightBkgnd.setBounds(taskItem.getLeft(), taskItem.getTop(),
                     taskItem.getLeft() + (int) dX, taskItem.getBottom()
             );
             deleteIcon.setBounds(taskItem.getLeft() + iconMargin, taskItem.getTop() + iconMargin,
                     taskItem.getLeft() + iconMargin + deleteIcon.getIntrinsicWidth(),
                     taskItem.getBottom() - iconMargin
             );
+            swipeRightBkgnd.draw(c);
+            deleteIcon.draw(c);
         } else {
-            swipeBkgnd.setBounds(taskItem.getRight() + (int) dX, taskItem.getTop(),
+            swipeLeftBkgnd.setBounds(taskItem.getRight() + (int) dX, taskItem.getTop(),
                     taskItem.getRight(), taskItem.getBottom());
             deleteIcon.setBounds(taskItem.getRight() - iconMargin - deleteIcon.getIntrinsicWidth(),
                     taskItem.getTop() + iconMargin,
                     taskItem.getRight() - iconMargin, taskItem.getBottom() - iconMargin);
         }
-        swipeBkgnd.draw(c);
-        deleteIcon.draw(c);
+        swipeLeftBkgnd.draw(c);
 
         super.onChildDraw(c, recyclerView, viewHolder, dX / 4, dY, actionState, isCurrentlyActive);
     }

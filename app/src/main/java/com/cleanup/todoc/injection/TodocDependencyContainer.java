@@ -8,8 +8,8 @@ import com.cleanup.todoc.model.repository.TaskRepository;
 
 public class TodocDependencyContainer {
 
-    public final ProjectRepository projectRepository;
-    public final TaskRepository taskRepository;
+    private final ProjectRepository projectRepository;
+    private final TaskRepository taskRepository;
 
     public TodocDependencyContainer(Application application) {
         TodocDatabase database = TodocDatabase.getInstance(application);
@@ -17,5 +17,11 @@ public class TodocDependencyContainer {
         taskRepository = new TaskRepository(database.taskDao());
     }
 
+    public ProjectRepository getProjectRepository() {
+        return projectRepository;
+    }
 
+    public TaskRepository getTaskRepository() {
+        return taskRepository;
+    }
 }

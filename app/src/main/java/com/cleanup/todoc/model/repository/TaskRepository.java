@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData;
 
 import com.cleanup.todoc.model.dao.TaskDao;
 import com.cleanup.todoc.model.entity.Task;
+import com.cleanup.todoc.model.entity.relation.TaskWithProject;
 
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -12,13 +13,16 @@ import java.util.concurrent.Executors;
 public class TaskRepository {
 
     private final TaskDao mTaskDao;
-    private final LiveData<List<Task>> allTasksOldNew;
+    private final LiveData<List<TaskWithProject>> allTasksWithProject;
+    private final LiveData<List<TaskWithProject>> allTasksWithProjectAZ;
     private final Executor doInBackground;
+
 
     public TaskRepository(TaskDao taskDao) {
         mTaskDao = taskDao;
-        allTasksOldNew = mTaskDao.getAllTasksOldNew();
         doInBackground = Executors.newFixedThreadPool(3);
+        allTasksWithProject = mTaskDao.getAllTasksWithProject();
+        allTasksWithProjectAZ = mTaskDao.getAllTasksWithProjectAZ();
     }
 
     public void insert(Task task) {
@@ -33,7 +37,11 @@ public class TaskRepository {
         doInBackground.execute(() -> mTaskDao.delete(task));
     }
 
-    public LiveData<List<Task>> getAllTasksOldNew() {
-        return allTasksOldNew;
+    public LiveData<List<TaskWithProject>> getAllTasksWithProject() {
+        return allTasksWithProject;
+    }
+
+    public LiveData<List<TaskWithProject>> getAllTasksWithProjectAZ() {
+        return allTasksWithProjectAZ;
     }
 }
