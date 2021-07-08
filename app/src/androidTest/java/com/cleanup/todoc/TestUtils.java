@@ -18,10 +18,11 @@ import org.hamcrest.Matchers;
  */
 public class TestUtils {
 
-    public static <VH extends RecyclerView.ViewHolder> ViewAction actionOnItemViewAtPosition(int position,
-                                                                                             @IdRes
-                                                                                                     int viewId,
-                                                                                             ViewAction viewAction) {
+    public static <VH extends RecyclerView.ViewHolder> ViewAction actionOnItemViewAtPosition(
+            int position,
+            @IdRes int viewId,
+            ViewAction viewAction
+    ) {
         return new ActionOnItemViewAtPositionViewAction(position, viewId, viewAction);
     }
 
@@ -30,18 +31,16 @@ public class TestUtils {
         return new RecyclerViewMatcher(recyclerViewId);
     }
 
-    private static final class ActionOnItemViewAtPositionViewAction<VH extends RecyclerView
-            .ViewHolder>
-            implements
-
-            ViewAction {
+    private static final class ActionOnItemViewAtPositionViewAction<VH extends RecyclerView.ViewHolder> implements ViewAction {
         private final int position;
         private final ViewAction viewAction;
         private final int viewId;
 
-        private ActionOnItemViewAtPositionViewAction(int position,
-                                                     @IdRes int viewId,
-                                                     ViewAction viewAction) {
+        private ActionOnItemViewAtPositionViewAction(
+                int position,
+                @IdRes int viewId,
+                ViewAction viewAction
+        ) {
             this.position = position;
             this.viewAction = viewAction;
             this.viewId = viewId;

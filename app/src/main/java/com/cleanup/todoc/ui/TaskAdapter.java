@@ -41,14 +41,14 @@ public class TaskAdapter extends ListAdapter<TaskWithProject, TaskAdapter.TaskVi
     private static final DiffUtil.ItemCallback<TaskWithProject> DIFF_CALLBACK = new DiffUtil.ItemCallback<TaskWithProject>() {
         @Override
         public boolean areItemsTheSame(@NonNull @NotNull TaskWithProject oldItem, @NonNull @NotNull TaskWithProject newItem) {
-            return oldItem.task.getId() == newItem.task.getId();
+            return oldItem.getTask().getId() == newItem.getTask().getId();
         }
 
         @Override
         public boolean areContentsTheSame(@NonNull @NotNull TaskWithProject oldItem, @NonNull @NotNull TaskWithProject newItem) {
-            return (oldItem.task.getName().equals(newItem.task.getName()) &&
-                    oldItem.task.getCreationTimestamp() == newItem.task.getCreationTimestamp() &&
-                    oldItem.task.getProjectId() == newItem.task.getProjectId());
+            return (oldItem.getTask().getName().equals(newItem.getTask().getName()) &&
+                    oldItem.getTask().getCreationTimestamp() == newItem.getTask().getCreationTimestamp() &&
+                    oldItem.getTask().getProjectId() == newItem.getTask().getProjectId());
         }
 
     };
@@ -145,10 +145,10 @@ public class TaskAdapter extends ListAdapter<TaskWithProject, TaskAdapter.TaskVi
          * @param taskWithProject the task to bind in the item view
          */
         void bind(TaskWithProject taskWithProject) {
-            lblTaskName.setText(taskWithProject.task.getName());
+            lblTaskName.setText(taskWithProject.getTask().getName());
             itemView.setTag(taskWithProject);
 
-            final Project taskProject = taskWithProject.project;
+            final Project taskProject = taskWithProject.getProject();
             if (taskProject != null) {
                 imgProject.setImageTintList(ColorStateList.valueOf(taskProject.getColor()));
                 lblProjectName.setText(taskProject.getName());

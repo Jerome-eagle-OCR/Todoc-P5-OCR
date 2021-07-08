@@ -234,12 +234,12 @@ public class MainViewModel extends ViewModel {
                     insertTask(new Task(projectId, taskName, timeStamp));
                     taskCreatedEditedMsg = "Tâche ajoutée";
                 } else {
-                    taskId = taskToEdit.task.getId();
-                    timeStamp = taskToEdit.task.getCreationTimestamp();
+                    taskId = taskToEdit.getTask().getId();
+                    timeStamp = taskToEdit.getTask().getCreationTimestamp();
 
                     //Manage task update testing first if task is actually modified
-                    boolean taskNotModified = taskName.equals(taskToEdit.task.getName()) &&
-                            projectId == taskToEdit.task.getProjectId();
+                    boolean taskNotModified = taskName.equals(taskToEdit.getTask().getName()) &&
+                            projectId == taskToEdit.getTask().getProjectId();
                     if (taskNotModified) {
                         taskCreatedEditedMsg = "Aucune tâche modifiée";
                     } else {
@@ -298,8 +298,8 @@ public class MainViewModel extends ViewModel {
         // If editing is involved
         if (taskToEdit != null) {
             dialogTitle = R.string.edit_task;
-            dialogEditText = taskToEdit.task.getName();
-            Project taskProject = taskToEdit.project;
+            dialogEditText = taskToEdit.getTask().getName();
+            Project taskProject = taskToEdit.getProject();
             projectIndex = Objects.requireNonNull(allProjects.getValue()).indexOf(taskProject);
             positiveBtnTxt = R.string.edit;
         }

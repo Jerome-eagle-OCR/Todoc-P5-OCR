@@ -59,7 +59,7 @@ public class DeleteTaskItemTouchHelperSimpleCallback extends ItemTouchHelper.Sim
 
         if (direction == ItemTouchHelper.RIGHT) {
             TaskWithProject taskToDelete = adapter.getTaskAtPosition(position);
-            viewModel.deleteTask(taskToDelete.task);
+            viewModel.deleteTask(taskToDelete.getTask());
 
             String snackMessage = "Tâche supprimée";
 
@@ -72,7 +72,7 @@ public class DeleteTaskItemTouchHelperSimpleCallback extends ItemTouchHelper.Sim
                             adapter.notifyItemChanged(Integer.MIN_VALUE);
                             taskRecyclerview.postOnAnimation(this::scrollToFirstPosition);
                         }
-                        viewModel.insertTask(taskToDelete.task);
+                        viewModel.insertTask(taskToDelete.getTask());
                     }
             ).show();
         }

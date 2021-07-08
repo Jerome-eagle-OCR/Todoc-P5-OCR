@@ -59,6 +59,7 @@ public class Task {
 
     /**
      * Alternative constructor for DAO update
+     *
      * @param id                the unique identifier of the task to set
      * @param projectId         the unique identifier of the project associated to the task to set
      * @param name              the name of the task to set
@@ -138,5 +139,27 @@ public class Task {
 
     public long getCreationTimestamp() {
         return creationTimestamp;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Task task = (Task) o;
+
+        if (getId() != task.getId()) return false;
+        if (getProjectId() != task.getProjectId()) return false;
+        if (getCreationTimestamp() != task.getCreationTimestamp()) return false;
+        return getName().equals(task.getName());
+    }
+
+    @Override
+    public int hashCode() {
+        int result = (int) (getId() ^ (getId() >>> 32));
+        result = 31 * result + (int) (getProjectId() ^ (getProjectId() >>> 32));
+        result = 31 * result + getName().hashCode();
+        result = 31 * result + (int) (getCreationTimestamp() ^ (getCreationTimestamp() >>> 32));
+        return result;
     }
 }

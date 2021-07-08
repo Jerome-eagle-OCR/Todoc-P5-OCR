@@ -83,7 +83,7 @@ public class MainActivityInstrumentedTest {
                 .check(matches(withText("zzz Tâche example")));
         onView(withRecyclerView(R.id.list_tasks).atPositionOnView(2, R.id.lbl_task_name))
                 .check(matches(withText("hhh Tâche example")));
-
+/*
         // Sort alphabetical
         onView(withId(R.id.action_sort)).perform(click());
         onView(withText(R.string.sort_alphabetical)).perform(click());
@@ -103,7 +103,7 @@ public class MainActivityInstrumentedTest {
                 .check(matches(withText("hhh Tâche example")));
         onView(withRecyclerView(R.id.list_tasks).atPositionOnView(2, R.id.lbl_task_name))
                 .check(matches(withText("aaa Tâche example")));
-
+*/
         // Sort old first
         onView(withId(R.id.action_sort)).perform(click());
         onView(withText(R.string.sort_oldest_first)).perform(click());
