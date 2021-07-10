@@ -68,13 +68,11 @@ public class ProjectDaoTest {
     @Test
     public void insertAndGetProjects() throws InterruptedException {
         //Given : we insert three projects
-        projectDao.insert(PROJECT_MAGICGITHUB);
-        projectDao.insert(PROJECT_ENTREVOISINS);
-        projectDao.insert(PROJECT_MAREU);
+        insertProjects();
 
-        setProjectIds();
+        setProjectIds(); //We set id after insertion in database not to interfere with autogenerate
 
-        List<Project> expectedProjects = Arrays.asList(
+        List<Project> expectedProjects = Arrays.asList( //We prepare id sorted expected list
                 PROJECT_MAGICGITHUB,
                 PROJECT_ENTREVOISINS,
                 PROJECT_MAREU
@@ -83,23 +81,23 @@ public class ProjectDaoTest {
         //When : we get the list of projects
         List<Project> actualProjects = LiveDataTestUtil.getValue(projectDao.getProjects());
 
-        //Then : the retrieved list contains the three projects in insertion order
+        //Then : the retrieved list contains the three projects sorted by id (insertion order)
         assertThat(actualProjects, IsIterableContainingInOrder.contains(expectedProjects.toArray()));
     }
 
     @Test
-    public void deleteAndGetProjects() throws InterruptedException {
+    public void insertAllDeleteOneAndGetProjects() throws InterruptedException {
         //Given : we insert three projects and delete the first one
-        projectDao.insert(PROJECT_MAGICGITHUB);
-        projectDao.insert(PROJECT_ENTREVOISINS);
-        projectDao.insert(PROJECT_MAREU);
+        insertProjects();
 
-        Project projectToDelete = LiveDataTestUtil.getValue(projectDao.getProjects()).get(FIRST_POSITION);
-        projectDao.delete(projectToDelete);
+        setProjectIds(); //We set id after insertion in database not to interfere with autogenerate
 
-        setProjectIds();
+        Project projectToDelete =
+                LiveDataTestUtil.getValue(projectDao.getProjects()).get(FIRST_POSITION);
 
-        List<Project> expectedProjects = Arrays.asList(
+        projectDao.delete(projectToDelete); //We delete the project in database
+
+        List<Project> expectedProjects = Arrays.asList( //We prepare id sorted expected list
                 PROJECT_ENTREVOISINS,
                 PROJECT_MAREU
         );
@@ -107,8 +105,14 @@ public class ProjectDaoTest {
         //When : we get the list of projects
         List<Project> actualProjects = LiveDataTestUtil.getValue(projectDao.getProjects());
 
-        //Then : the retrieved list contains the two projects
+        //Then : the retrieved list contains the two projects sorted by id (insertion order)
         assertThat(actualProjects, IsIterableContainingInOrder.contains(expectedProjects.toArray()));
+    }
+
+    private void insertProjects() {
+        projectDao.insert(PROJECT_MAGICGITHUB);
+        projectDao.insert(PROJECT_ENTREVOISINS);
+        projectDao.insert(PROJECT_MAREU);
     }
 
     private void setProjectIds() {

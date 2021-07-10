@@ -27,10 +27,10 @@ public interface TaskDao {
 
     @Transaction
     @Query("SELECT * FROM task_table ORDER BY creation_timestamp ASC")
-    LiveData<List<TaskWithProject>> getAllTasksWithProject();
+    LiveData<List<TaskWithProject>> getAllTaskWithProject();
 
     @Transaction
     @Query("SELECT * FROM project_table INNER JOIN task_table " +
             "ON project_table.id= task_table.project_id ORDER BY project_table.name ASC")
-    LiveData<List<TaskWithProject>> getAllTasksWithProjectAZ();
+    LiveData<List<TaskWithProject>> getAllTaskWithProjectAZ();
 }

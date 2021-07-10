@@ -29,6 +29,12 @@ public class TestModel {
     private static final int PROJECT_MAREU_COLOR = Color.parseColor("#ab000d");
     public static final Project PROJECT_MAREU = new Project(PROJECT_MAREU_NAME, PROJECT_MAREU_COLOR);
 
+    //Project Android
+    public static final int PROJECT_ANDROID_ID = 4;
+    private static final String PROJECT_ANDROID_NAME = "Projet Android";
+    private static final int PROJECT_ANDROID_COLOR = Color.parseColor("#fafafa");
+    public static final Project PROJECT_ANDROID = new Project(PROJECT_ANDROID_NAME, PROJECT_ANDROID_COLOR);
+
 
     //Test tasks
 

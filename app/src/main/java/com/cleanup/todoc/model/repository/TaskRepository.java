@@ -21,8 +21,8 @@ public class TaskRepository {
     public TaskRepository(TaskDao taskDao) {
         mTaskDao = taskDao;
         doInBackground = Executors.newFixedThreadPool(3);
-        allTasksWithProject = mTaskDao.getAllTasksWithProject();
-        allTasksWithProjectAZ = mTaskDao.getAllTasksWithProjectAZ();
+        allTasksWithProject = mTaskDao.getAllTaskWithProject();
+        allTasksWithProjectAZ = mTaskDao.getAllTaskWithProjectAZ();
     }
 
     public void insert(Task task) {

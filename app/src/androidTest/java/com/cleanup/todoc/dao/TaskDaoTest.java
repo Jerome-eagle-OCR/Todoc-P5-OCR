@@ -23,7 +23,10 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
+import static com.cleanup.todoc.TestModel.DELAY;
 import static com.cleanup.todoc.TestModel.FIRST_POSITION;
+import static com.cleanup.todoc.TestModel.PROJECT_ANDROID;
+import static com.cleanup.todoc.TestModel.PROJECT_ANDROID_ID;
 import static com.cleanup.todoc.TestModel.PROJECT_ENTREVOISINS;
 import static com.cleanup.todoc.TestModel.PROJECT_MAGICGITHUB;
 import static com.cleanup.todoc.TestModel.PROJECT_MAREU;
@@ -33,8 +36,11 @@ import static com.cleanup.todoc.TestModel.TASK_CREATE_MEETING_APP;
 import static com.cleanup.todoc.TestModel.TASK_CREATE_MEETING_APP_ID;
 import static com.cleanup.todoc.TestModel.TASK_MAKE_TESTS_PASS;
 import static com.cleanup.todoc.TestModel.TASK_MAKE_TESTS_PASS_ID;
+import static com.cleanup.todoc.TestModel.TASK_MAKE_TESTS_PASS_TIMESTAMP;
 import static com.cleanup.todoc.TestModel.TASK_NEIGHBOUR_DETAILS;
 import static com.cleanup.todoc.TestModel.TASK_NEIGHBOUR_DETAILS_ID;
+import static com.cleanup.todoc.TestModel.TASK_NEIGHBOUR_DETAILS_NAME;
+import static com.cleanup.todoc.TestModel.TASK_NEIGHBOUR_DETAILS_PROJECT_ID;
 import static com.cleanup.todoc.TestModel.THIRD_POSITION;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -65,10 +71,11 @@ public class TaskDaoTest {
     @Test
     public void getAllTaskWithProjectWhenNoTaskInserted() throws InterruptedException {
         //Given : we have three projects in database but no task inserted yet
-        insertTestProjects();
+        insertTestProjects(); //We need project(s) to have tasks
 
         //When : we get the list of tasks
-        List<TaskWithProject> actualTaskWithProjectList = LiveDataTestUtil.getValue(taskDao.getAllTasksWithProject());
+        List<TaskWithProject> actualTaskWithProjectList =
+                LiveDataTestUtil.getValue(taskDao.getAllTaskWithProject());
 
         //Then : the retrieved list is empty
         assertTrue(actualTaskWithProjectList.isEmpty());
@@ -77,10 +84,11 @@ public class TaskDaoTest {
     @Test
     public void getAllTaskWithProjectAZWhenNoTaskInserted() throws InterruptedException {
         //Given : we have three projects in database but no task inserted yet
-        insertTestProjects();
+        insertTestProjects(); //We need project(s) to have tasks
 
         //When : we get the list of tasks
-        List<TaskWithProject> actualTaskWithProjectList = LiveDataTestUtil.getValue(taskDao.getAllTasksWithProjectAZ());
+        List<TaskWithProject> actualTaskWithProjectList =
+                LiveDataTestUtil.getValue(taskDao.getAllTaskWithProjectAZ());
 
         //Then : the retrieved list is empty
         assertTrue(actualTaskWithProjectList.isEmpty());
@@ -89,19 +97,20 @@ public class TaskDaoTest {
     @Test
     public void insertAndGetAllTaskWithProject() throws InterruptedException {
         //Given : we have three projects and we insert a task in each one
-        insertTestProjects();
+        insertTestProjects(); //We need project(s) to have tasks
 
         insertTestTasks();
 
         setTestTasksIds();
 
         //When : we get the list of taskWithProject
-        List<TaskWithProject> actualTaskWithProjectList = LiveDataTestUtil.getValue(taskDao.getAllTasksWithProject());
+        List<TaskWithProject> actualTaskWithProjectList =
+                LiveDataTestUtil.getValue(taskDao.getAllTaskWithProject());
 
-        //Then : the retrieved list contains the three tasks in insertion order
+        //Then : the retrieved list contains the three tasks in insertion order (date sorted)
         assertEquals(TASKS_COUNT, actualTaskWithProjectList.size());
 
-        List<Task> actualTasks = getActualTasksInsertTest(actualTaskWithProjectList);
+        List<Task> actualTasks = getActualTasksInsertOrUpdateTest(actualTaskWithProjectList);
 
         //First task is the task inserted firstly
         assertEquals(TASK_MAKE_TESTS_PASS, actualTasks.get(FIRST_POSITION));
@@ -114,19 +123,20 @@ public class TaskDaoTest {
     @Test
     public void insertAndGetAllTaskWithProjectAZ() throws InterruptedException {
         //Given : we have three projects and we insert a task in each one
-        insertTestProjects();
+        insertTestProjects(); //We need project(s) to create tasks
 
         insertTestTasks();
 
         setTestTasksIds();
 
         //When : we get the list of taskWithProject
-        List<TaskWithProject> actualTaskWithProjectList = LiveDataTestUtil.getValue(taskDao.getAllTasksWithProjectAZ());
+        List<TaskWithProject> actualTaskWithProjectList =
+                LiveDataTestUtil.getValue(taskDao.getAllTaskWithProjectAZ());
 
-        //Then : the retrieved list contains the three tasks in insertion order
+        //Then : the retrieved list contains the three tasks in project name alphabetical order
         assertEquals(TASKS_COUNT, actualTaskWithProjectList.size());
 
-        List<Task> actualTasks = getActualTasksInsertTest(actualTaskWithProjectList);
+        List<Task> actualTasks = getActualTasksInsertOrUpdateTest(actualTaskWithProjectList);
 
         //First task is the task inserted secondly (project name begins with "E")
         assertEquals(TASK_NEIGHBOUR_DETAILS, actualTasks.get(FIRST_POSITION));
@@ -137,20 +147,95 @@ public class TaskDaoTest {
     }
 
     @Test
-    public void deleteAndGetAllTaskWithProject() throws InterruptedException {
-        //Given : we have three projects, we insert a task in each one and we delete the third one
-        insertTestProjects();
+    public void insertAllThenUpdateOneAndGetAllTaskWithProject() throws InterruptedException {
+        //Given : we have three projects, one task in each one and we update the secondly added task
+        //        with the same id and changing the other attributes thru a new task
+        insertTestProjects(); //We need project(s) to create tasks
 
         insertTestTasks();
 
         setTestTasksIds();
 
+        Task TASK_NEIGHBOUR_DETAILS_UPDATED = new Task(
+                TASK_NEIGHBOUR_DETAILS.getId(), //we get the id of the task we want to update
+                TASK_NEIGHBOUR_DETAILS_PROJECT_ID + 1, //we set the next project
+                TASK_NEIGHBOUR_DETAILS_NAME.replace("nouvelle ", ""),
+                TASK_MAKE_TESTS_PASS_TIMESTAMP - 2 * DELAY);
+
+        taskDao.update(TASK_NEIGHBOUR_DETAILS_UPDATED);
+
+        //When : we get the list of taskWithProject
+        List<TaskWithProject> actualTaskWithProjectList =
+                LiveDataTestUtil.getValue(taskDao.getAllTaskWithProject());
+
+        //Then : the retrieved list contains the three tasks in insertion order (date sorted)
+        assertEquals(TASKS_COUNT, actualTaskWithProjectList.size());
+
+        List<Task> actualTasks = getActualTasksInsertOrUpdateTest(actualTaskWithProjectList);
+
+        //First task is the task inserted secondly but because updated is now the oldest one
+        assertEquals(TASK_NEIGHBOUR_DETAILS_UPDATED, actualTasks.get(FIRST_POSITION));
+        //Second task is the task inserted firstly but now not the oldest anymore
+        assertEquals(TASK_MAKE_TESTS_PASS, actualTasks.get(SECOND_POSITION));
+        //Third task is the task inserted thirdly and still the newest one
+        assertEquals(TASK_CREATE_MEETING_APP, actualTasks.get(THIRD_POSITION));
+    }
+
+    @Test
+    public void insertAllThenUpdateOneAndGetAllTaskWithProjectAZ() throws InterruptedException {
+        //Given : we have three projects, one task in each one and we update the secondly added task
+        //        with the same id and changing the other attributes thru a new task
+        insertTestProjects(); //We need project(s) to create tasks
+
+        db.projectDao().insert(PROJECT_ANDROID);
+
+        insertTestTasks();
+
+        setTestTasksIds();
+
+        Task TASK_NEIGHBOUR_DETAILS_UPDATED = new Task(
+                TASK_NEIGHBOUR_DETAILS.getId(),
+                PROJECT_ANDROID_ID,
+                "Commencer la formation",
+                TASK_MAKE_TESTS_PASS_TIMESTAMP - 2 * DELAY
+        );
+
+        taskDao.update(TASK_NEIGHBOUR_DETAILS_UPDATED);
+
+        //When : we get the list of taskWithProject
+        List<TaskWithProject> actualTaskWithProjectList =
+                LiveDataTestUtil.getValue(taskDao.getAllTaskWithProjectAZ());
+
+        //Then : the retrieved list contains the three tasks in project name alphabetical order
+        assertEquals(TASKS_COUNT, actualTaskWithProjectList.size());
+
+        List<Task> actualTasks = getActualTasksInsertOrUpdateTest(actualTaskWithProjectList);
+
+        //First task is the task with project name beginning with "* And"
+        assertEquals(TASK_NEIGHBOUR_DETAILS_UPDATED, actualTasks.get(FIRST_POSITION));
+        //Second task is the task with project name beginning with "* Mag"
+        assertEquals(TASK_MAKE_TESTS_PASS, actualTasks.get(SECOND_POSITION));
+        //Third task is the task with project name beginning with "* Mar"
+        assertEquals(TASK_CREATE_MEETING_APP, actualTasks.get(THIRD_POSITION));
+    }
+
+    @Test
+    public void insertAllThenDeleteOneAndGetAllTaskWithProject() throws InterruptedException {
+        //Given : we have three projects, we insert a task in each one and we delete the third one
+        insertTestProjects(); //We need project(s) to create tasks
+
+        insertTestTasks();
+
+        setTestTasksIds();
+
+        //Deletion of thirdly inserted task
         taskDao.delete(TASK_CREATE_MEETING_APP);
 
         //When : we get the list of taskWithProject
-        List<TaskWithProject> actualTaskWithProjectList = LiveDataTestUtil.getValue(taskDao.getAllTasksWithProject());
+        List<TaskWithProject> actualTaskWithProjectList =
+                LiveDataTestUtil.getValue(taskDao.getAllTaskWithProject());
 
-        //Then : the retrieved list contains the two tasks in insertion order
+        //Then : the retrieved list contains the two tasks in insertion order (date sorted)
         assertEquals(TASKS_COUNT - 1, actualTaskWithProjectList.size());
 
         List<Task> actualTasks = getActualTasksDeleteTest(actualTaskWithProjectList);
@@ -162,18 +247,20 @@ public class TaskDaoTest {
     }
 
     @Test
-    public void deleteAndGetAllTaskWithProjectAZ() throws InterruptedException {
+    public void insertAllThenDeleteOneAndGetAllTaskWithProjectAZ() throws InterruptedException {
         //Given : we have three projects, we insert a task in each one and we delete the third one
-        insertTestProjects();
+        insertTestProjects(); //We need project(s) to create tasks
 
         insertTestTasks();
 
         setTestTasksIds();
 
+        //Deletion of thirdly inserted task
         taskDao.delete(TASK_CREATE_MEETING_APP);
 
         //When : we get the list of taskWithProject
-        List<TaskWithProject> actualTaskWithProjectList = LiveDataTestUtil.getValue(taskDao.getAllTasksWithProjectAZ());
+        List<TaskWithProject> actualTaskWithProjectList =
+                LiveDataTestUtil.getValue(taskDao.getAllTaskWithProjectAZ());
 
         //Then : the retrieved list contains the two tasks in project name alphabetical order
         assertEquals(TASKS_COUNT - 1, actualTaskWithProjectList.size());
@@ -205,7 +292,7 @@ public class TaskDaoTest {
         TASK_CREATE_MEETING_APP.setId(TASK_CREATE_MEETING_APP_ID);
     }
 
-    private List<Task> getActualTasksInsertTest(List<TaskWithProject> actualTaskWithProjectList) {
+    private List<Task> getActualTasksInsertOrUpdateTest(List<TaskWithProject> actualTaskWithProjectList) {
         return Arrays.asList(
                 actualTaskWithProjectList.get(FIRST_POSITION).getTask(),
                 actualTaskWithProjectList.get(SECOND_POSITION).getTask(),
