@@ -61,7 +61,7 @@ public class TaskRepositoryTest {
     public void verifyGetAllTaskWithProjectCallsGetAllTaskWithProject() {
         //Given :
         //When :
-        underTestTaskRepository.getAllTasksWithProject();
+        underTestTaskRepository.getAllTaskWithProject();
         //Then :
         verify(mockTaskDao, times(1)).getAllTaskWithProject();
     }
@@ -71,7 +71,7 @@ public class TaskRepositoryTest {
     public void verifyGetAllTaskWithProjectAZCallsGetAllTaskWithProjectAZ() {
         //Given :
         //When :
-        underTestTaskRepository.getAllTasksWithProjectAZ();
+        underTestTaskRepository.getAllTaskWithProjectAZ();
         //Then :
         verify(mockTaskDao, times(1)).getAllTaskWithProjectAZ();
     }

@@ -27,12 +27,16 @@ public class MainViewModel extends ViewModel {
 
     private final ProjectRepository projectRepository;
     private final TaskRepository taskRepository;
+
     private final LiveData<List<Project>> allProjects;
-    private final LiveData<List<TaskWithProject>> allTasksWithProject;
+
+    private final LiveData<List<TaskWithProject>> allTaskWithProject;
     private final LiveData<List<TaskWithProject>> allTasksWithProjectAZ;
+
     private final MutableLiveData<Utils.SortMethod> sortMethodMutableLiveData;
     private final MediatorLiveData<List<TaskWithProject>> sortedListForDisplayMediatorLiveData = new MediatorLiveData<>();
     private final MutableLiveData<TaskListViewState> taskListViewStateMutableLiveData;
+
     private boolean emptyTaskNameError;
     private String taskCreatedEditedMsg = null;
     private boolean dialogDismiss;
@@ -42,11 +46,11 @@ public class MainViewModel extends ViewModel {
         this.projectRepository = projectRepository;
         this.taskRepository = taskRepository;
         allProjects = projectRepository.getAllProjects();
-        allTasksWithProject = taskRepository.getAllTasksWithProject();
-        allTasksWithProjectAZ = taskRepository.getAllTasksWithProjectAZ();
+        allTaskWithProject = taskRepository.getAllTaskWithProject();
+        allTasksWithProjectAZ = taskRepository.getAllTaskWithProjectAZ();
         sortMethodMutableLiveData = new MutableLiveData<>(Utils.SortMethod.NONE);
         sortedListForDisplayMediatorLiveData.addSource(allTasksWithProjectAZ, tasks -> sortTaskList());
-        sortedListForDisplayMediatorLiveData.addSource(allTasksWithProject, tasks -> sortTaskList());
+        sortedListForDisplayMediatorLiveData.addSource(allTaskWithProject, tasks -> sortTaskList());
         taskListViewStateMutableLiveData = new MutableLiveData<>(new TaskListViewState(View.VISIBLE, View.GONE));
     }
 
@@ -138,10 +142,10 @@ public class MainViewModel extends ViewModel {
         switch (sorting) { // Method is not called when sort method is null
             case OLD_FIRST:
             case NONE:
-                sortedList = allTasksWithProject.getValue(); // List is pre-sorted from SQL request
+                sortedList = allTaskWithProject.getValue(); // List is pre-sorted from SQL request
                 break;
             case RECENT_FIRST:
-                sortedList.addAll(allTasksWithProject.getValue());
+                sortedList.addAll(allTaskWithProject.getValue());
                 //sortedList.addAll(allTasksOldNew.getValue());
                 Collections.reverse(sortedList); // Pre-sorted list is reversed
                 break;
