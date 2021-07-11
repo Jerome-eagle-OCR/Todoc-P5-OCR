@@ -36,4 +36,26 @@ public class AddEditTaskDialogViewState {
     public int getPositiveBtnTxt() {
         return positiveBtnTxt;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        AddEditTaskDialogViewState that = (AddEditTaskDialogViewState) o;
+
+        if (getDialogTitle() != that.getDialogTitle()) return false;
+        if (getProjectIndex() != that.getProjectIndex()) return false;
+        if (getPositiveBtnTxt() != that.getPositiveBtnTxt()) return false;
+        return getDialogEditText().equals(that.getDialogEditText());
+    }
+
+    @Override
+    public int hashCode() {
+        int result = getDialogTitle();
+        result = 31 * result + getDialogEditText().hashCode();
+        result = 31 * result + getProjectIndex();
+        result = 31 * result + getPositiveBtnTxt();
+        return result;
+    }
 }

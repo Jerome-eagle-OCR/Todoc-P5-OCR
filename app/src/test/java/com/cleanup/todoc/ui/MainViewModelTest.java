@@ -1,8 +1,14 @@
 package com.cleanup.todoc.ui;
 
+import android.view.View;
+import android.widget.EditText;
+import android.widget.Spinner;
+
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
 import androidx.lifecycle.MutableLiveData;
 
+import com.cleanup.todoc.R;
+import com.cleanup.todoc.Utils;
 import com.cleanup.todoc.model.entity.Project;
 import com.cleanup.todoc.model.entity.Task;
 import com.cleanup.todoc.model.entity.relation.TaskWithProject;
@@ -15,15 +21,20 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MainViewModelTest {
@@ -40,9 +51,6 @@ public class MainViewModelTest {
     private final MutableLiveData<List<Project>> allProjectsMutableLiveData = new MutableLiveData<>();
     private final MutableLiveData<List<TaskWithProject>> allTaskWithProjectMutableLiveData = new MutableLiveData<>();
     private final MutableLiveData<List<TaskWithProject>> allTaskWithProjectAZMutableLiveData = new MutableLiveData<>();
-    //private final MutableLiveData<Utils.SortMethod> sortMethodMutableLiveData = new MutableLiveData<>();
-    //private final MediatorLiveData<List<TaskWithProject>> sortedListForDisplayMediatorLiveData = new MediatorLiveData<>();
-    //private final MutableLiveData<TaskListViewState> taskListViewStateMutableLiveData = new MutableLiveData<>();
 
 
     @Rule
@@ -50,10 +58,12 @@ public class MainViewModelTest {
 
     @Before
     public void setUp() throws Exception {
-        allProjectsLiveDataMocking();
-        allTaskWithProjectLiveDataMocking();
-        allTaskWithProjectAZLiveDataMocking();
+        //Mock LiveDatas from repositories
+        mocking_allProjectsLiveData();
+        mocking_allTaskWithProjectLiveData();
+        mocking_allTaskWithProjectAZLiveData();
 
+        //Instantiate MainViewModel for testing, passing mocked repositories
         underTestMainViewModel = new MainViewModel(mockProjectRepository, mockTaskRepository);
     }
 
@@ -61,11 +71,12 @@ public class MainViewModelTest {
     public void tearDown() throws Exception {
     }
 
+    //Verifying ProjectRepository callings
 
     @Test
-    public void insertProject() {
+    public void verifyInsertProjectCallsProjectRepositoryInsert() {
         //Given :
-        Project projectToInsert = getAllProjectsForTest().get(0);
+        Project projectToInsert = this.getAllProjectsForTest().get(0);
         //When :
         underTestMainViewModel.insertProject(projectToInsert);
         //Then :
@@ -73,9 +84,9 @@ public class MainViewModelTest {
     }
 
     @Test
-    public void deleteProject() {
+    public void verifyDeleteProjectCallsProjectRepositoryDelete() {
         //Given :
-        Project projectToDelete = getAllProjectsForTest().get(0);
+        Project projectToDelete = this.getAllProjectsForTest().get(0);
         //When :
         underTestMainViewModel.deleteProject(projectToDelete);
         //Then :
@@ -83,76 +94,257 @@ public class MainViewModelTest {
     }
 
     @Test
-    public void getAllProjects() {
+    public void getAllProjectsShouldCallProjectRepositoryGetAllProjectsAndReturnAllProjects() {
         //Given :
         //When :
         underTestMainViewModel.getAllProjects();
         //Then :
         verify(mockProjectRepository, times(1)).getAllProjects();
+        assert (underTestMainViewModel.getAllProjects().getValue() == this.allProjectsMutableLiveData.getValue());
+    }
+
+
+    //Verifying TaskRepository callings
+
+    @Test
+    public void verifyInsertTaskCallsTaskRepositoryInsert() {
+        //Given :
+        Task taskToInsert = this.allTaskWithProjectMutableLiveData.getValue().get(0).getTask();
+        //When :
+        underTestMainViewModel.insertTask(taskToInsert);
+        //Then :
+        verify(mockTaskRepository, times(1)).insert(taskToInsert);
     }
 
     @Test
-    public void insertTask() {
+    public void verifyUpdateTaskCallsTaskRepositoryUpdate() {
+        //Given :
+        Task taskToUpdate = this.allTaskWithProjectMutableLiveData.getValue().get(0).getTask();
+        //When :
+        underTestMainViewModel.updateTask(taskToUpdate);
+        //Then :
+        verify(mockTaskRepository, times(1)).update(taskToUpdate);
     }
 
     @Test
-    public void updateTask() {
+    public void verifyDeleteTaskCallsTaskRepositoryDelete() {
+        //Given :
+        Task taskToDelete = this.allTaskWithProjectMutableLiveData.getValue().get(0).getTask();
+        //When :
+        underTestMainViewModel.deleteTask(taskToDelete);
+        //Then :
+        verify(mockTaskRepository, times(1)).delete(taskToDelete);
+    }
+
+
+    //Testing scenarios for setSorting(SortMethod)
+
+    @Test
+    public void givenNoTaskThenSetSortingAnySortMethodShouldMeetAllAssertions() {
+        //Given :
+        allTaskWithProjectMutableLiveData.setValue(new ArrayList<>());
+        allTaskWithProjectAZMutableLiveData.setValue(new ArrayList<>());
+        //When :
+        underTestMainViewModel.setSorting(Utils.SortMethod.PROJECT_AZ);
+        //Then :
+        assert (underTestMainViewModel.getSortMethod().getValue() == Utils.SortMethod.PROJECT_AZ);
+        //The task list to be displayed is empty
+        assert (underTestMainViewModel.getSortedList().getValue().isEmpty());
+        //No task label is visible and the task list is gone
+        assert (underTestMainViewModel.getTaskListViewState().getValue().getNoTaskLblVisibility() == View.VISIBLE);
+        assert (underTestMainViewModel.getTaskListViewState().getValue().getTaskListVisibility() == View.GONE);
     }
 
     @Test
-    public void deleteTask() {
+    public void givenAllTestTasksThenSetSortingNONEShouldMeetAllAssertions() {
+        //Given :
+        //When :
+        underTestMainViewModel.setSorting(Utils.SortMethod.NONE);
+        //Then :
+        assert (underTestMainViewModel.getSortMethod().getValue() == Utils.SortMethod.NONE);
+        //The task list to be displayed is full and properly sorted
+        assert (underTestMainViewModel.getSortedList().getValue() == allTaskWithProjectMutableLiveData.getValue());
+        //No task label is gone and the task list is visible
+        assert (underTestMainViewModel.getTaskListViewState().getValue().getNoTaskLblVisibility() == View.GONE);
+        assert (underTestMainViewModel.getTaskListViewState().getValue().getTaskListVisibility() == View.VISIBLE);
     }
 
     @Test
-    public void setSorting() {
+    public void givenAllTestTasksThenSetSortingOLD_FIRSTShouldMeetAllAssertions() {
+        //Given :
+        //When :
+        underTestMainViewModel.setSorting(Utils.SortMethod.OLD_FIRST);
+        //Then :
+        assert (underTestMainViewModel.getSortMethod().getValue() == Utils.SortMethod.OLD_FIRST);
+        //The task list to be displayed is full and properly sorted
+        assert (underTestMainViewModel.getSortedList().getValue() == allTaskWithProjectMutableLiveData.getValue());
+        //No task label is gone and the task list is visible
+        assert (underTestMainViewModel.getTaskListViewState().getValue().getNoTaskLblVisibility() == View.GONE);
+        assert (underTestMainViewModel.getTaskListViewState().getValue().getTaskListVisibility() == View.VISIBLE);
     }
 
     @Test
-    public void getSortMethod() {
+    public void givenAllTestTasksThenSetSortingRECENT_FIRSTShouldMeetAllAssertions() {
+        //Given :
+        //When :
+        underTestMainViewModel.setSorting(Utils.SortMethod.RECENT_FIRST);
+        //Then :
+        assert (underTestMainViewModel.getSortMethod().getValue() == Utils.SortMethod.RECENT_FIRST);
+        //The task list to be displayed is full and properly sorted
+        List<TaskWithProject> expectedSortedList = new ArrayList<>(this.allTaskWithProjectMutableLiveData.getValue());
+        Collections.reverse(expectedSortedList); //Get a list sorted by date descending
+        assert (underTestMainViewModel.getSortedList().getValue().equals(expectedSortedList));
+        //No task label is gone and the task list is visible
+        assert (underTestMainViewModel.getTaskListViewState().getValue().getNoTaskLblVisibility() == View.GONE);
+        assert (underTestMainViewModel.getTaskListViewState().getValue().getTaskListVisibility() == View.VISIBLE);
     }
 
     @Test
-    public void getSortedList() {
+    public void givenAllTestTasksThenSetSortingPROJECT_AZShouldMeetAllAssertions() {
+        //Given :
+        //When :
+        underTestMainViewModel.setSorting(Utils.SortMethod.PROJECT_AZ);
+        //Then :
+        assert (underTestMainViewModel.getSortMethod().getValue() == Utils.SortMethod.PROJECT_AZ);
+        //The task list to be displayed is full and properly sorted
+        assert (underTestMainViewModel.getSortedList().getValue() == this.allTaskWithProjectAZMutableLiveData.getValue());
+        //No task label is gone and the task list is visible
+        assert (underTestMainViewModel.getTaskListViewState().getValue().getNoTaskLblVisibility() == View.GONE);
+        assert (underTestMainViewModel.getTaskListViewState().getValue().getTaskListVisibility() == View.VISIBLE);
+    }
+
+
+    //Testing scenarios for getAddEditDialogViewState(TaskWithProject)
+
+    @Test
+    public void givenNoTaskToEditThenGetAddEditDialogViewStateShouldReturnViewStateForAddingPurpose() {
+        //Given :
+        //When :
+        underTestMainViewModel.getAddEditDialogViewState(null);
+        //Then :
+        assert (underTestMainViewModel.getAddEditDialogViewState(null).equals(this.getAddDialogViewState()));
     }
 
     @Test
-    public void getTaskListViewState() {
+    public void givenATaskToEditThenGetAddEditDialogViewStateShouldReturnViewStateForEditingPurpose() {
+        //Given :
+        TaskWithProject testTask5 = this.getAllTaskWithProjectForTest().get(4);
+        //When :
+        underTestMainViewModel.getAddEditDialogViewState(testTask5);
+        //Then :
+        assert (underTestMainViewModel.getAddEditDialogViewState(testTask5).equals(this.getEditDialogViewStateForTestTask5()));
+    }
+
+
+    //Testing scenarios for createEditTask(TaskWithProject, EditText, Spinner)
+
+    @Test
+    public void givenNoTaskToEditNullEditTextNullSpinnerThenCreateEditTaskShouldMeetAllAssertions() {
+        //Given :
+        //When :
+        underTestMainViewModel.createEditTask(null, null, null);
+        //Then :
+        //No task should be created
+        verify(mockTaskRepository, times(0)).insert(Mockito.any(Task.class));
+        //Task name empty text error boolean should be false
+        assert (!underTestMainViewModel.getEmptyTaskNameError());
+        //Snackbar message should be empty
+        assert (underTestMainViewModel.getTaskCreatedEditedMsg().isEmpty());
+        //Dialog dismiss boolean should be true
+        assert (underTestMainViewModel.getDialogDismiss());
     }
 
     @Test
-    public void createEditTask() {
+    public void givenNoTaskToEditButNoTaskNameThenCreateEditTaskShouldMeetAllAssertions() {
+        //Given :
+        EditText editText = getEditText("");
+        Spinner spinner = getSpinner();
+        //When :
+        underTestMainViewModel.createEditTask(null, editText, spinner);
+        //Then :
+        //No task should be created
+        verify(mockTaskRepository, times(0)).insert(Mockito.any(Task.class));
+        //Task name empty text error boolean should be true
+        assert (underTestMainViewModel.getEmptyTaskNameError());
+        //Snackbar message should be empty
+        assert (underTestMainViewModel.getTaskCreatedEditedMsg().isEmpty());
+        //Dialog should not be dismissed
+        assert (!underTestMainViewModel.getDialogDismiss());
     }
 
     @Test
-    public void getEmptyTaskNameError() {
+    public void givenNoTaskToEditThenCreateEditTaskShouldMeetAllAssertions() {
+        //Given :
+        EditText editText = getEditText("Nouvelle tâche");
+        Spinner spinner = getSpinner();
+        //When :
+        underTestMainViewModel.createEditTask(null, editText, spinner);
+        //Then :
+        //A task should be created
+        verify(mockTaskRepository, times(1)).insert(Mockito.any(Task.class));
+        //Task name empty text error boolean should be false
+        assert (!underTestMainViewModel.getEmptyTaskNameError());
+        //Snackbar message should announce that a task has been created
+        assert (underTestMainViewModel.getTaskCreatedEditedMsg().equals("Tâche ajoutée"));
+        //Dialog dismiss boolean should be true
+        assert (underTestMainViewModel.getDialogDismiss());
     }
 
     @Test
-    public void getTaskCreatedEditedMsg() {
+    public void givenATaskToEditButNoChangeThenCreateEditTaskShouldMeetAllAssertions() {
+        //Given :
+        TaskWithProject testTask5 = this.getAllTaskWithProjectForTest().get(4);
+        EditText editText = getEditText(testTask5.getTask().getName());//Same name
+        Spinner spinner = getSpinner();//Spinner is set to project "Lucidia" as testTask5"
+        //When :
+        underTestMainViewModel.createEditTask(testTask5, editText, spinner);
+        //Then :
+        //No task should be updated nor created
+        verify(mockTaskRepository, times(0)).update(testTask5.getTask());
+        verify(mockTaskRepository, times(0)).insert(testTask5.getTask());
+        //Task name empty text error boolean should be false
+        assert (!underTestMainViewModel.getEmptyTaskNameError());
+        //Snackbar message should announce that no task has been updated
+        assert (underTestMainViewModel.getTaskCreatedEditedMsg().equals("Aucune tâche modifiée"));
+        //Dialog dismiss boolean should be true
+        assert (underTestMainViewModel.getDialogDismiss());
     }
 
     @Test
-    public void getDialogDismiss() {
+    public void givenATaskToEditThenCreateEditTaskShouldMeetAllAssertions() {
+        //Given :
+        TaskWithProject testTask5 = this.getAllTaskWithProjectForTest().get(4);
+        EditText editText = getEditText("any name");//Different name
+        Spinner spinner = getSpinner();//Spinner is set to project "Lucidia" as testTask5"
+        //When :
+        underTestMainViewModel.createEditTask(testTask5, editText, spinner);
+        //Then :
+        //The task should be updated
+        verify(mockTaskRepository, times(1)).update(Mockito.any(Task.class));
+        //Task name empty text error boolean should be false
+        assert (!underTestMainViewModel.getEmptyTaskNameError());
+        //Snackbar message should announce that the task has been updated
+        assert (underTestMainViewModel.getTaskCreatedEditedMsg().equals("Tâche modifiée"));
+        //Dialog dismiss boolean should be true
+        assert (underTestMainViewModel.getDialogDismiss());
     }
 
-    @Test
-    public void getAddEditDialogViewState() {
-    }
 
+    //Mocking repositories LiveDatas
 
-    private void allProjectsLiveDataMocking() {
+    private void mocking_allProjectsLiveData() {
         allProjectsMutableLiveData.setValue(getAllProjectsForTest());
         doReturn(allProjectsMutableLiveData).when(mockProjectRepository).getAllProjects();
     }
 
-    private void allTaskWithProjectLiveDataMocking() {
+    private void mocking_allTaskWithProjectLiveData() {
         List<TaskWithProject> allTaskWithProject = getAllTaskWithProjectForTest();
 
         allTaskWithProjectMutableLiveData.setValue(allTaskWithProject);
         doReturn(allTaskWithProjectMutableLiveData).when(mockTaskRepository).getAllTaskWithProject();
     }
 
-    private void allTaskWithProjectAZLiveDataMocking() {
+    private void mocking_allTaskWithProjectAZLiveData() {
         List<TaskWithProject> allTaskWithProjectAZ = Arrays.asList(
                 getAllTaskWithProjectForTest().get(2),
                 getAllTaskWithProjectForTest().get(5),
@@ -166,12 +358,20 @@ public class MainViewModelTest {
         doReturn(allTaskWithProjectAZMutableLiveData).when(mockTaskRepository).getAllTaskWithProjectAZ();
     }
 
+
+    //Setting projects, tasks and taskWithProjects
+
     private List<Project> getAllProjectsForTest() {
         List<Project> allProjects = Arrays.asList(
                 new Project("Projet Tartampion", 0xFFEADAD1),
                 new Project("Projet Lucidia", 0xFFB4CDBA),
                 new Project("Projet Circus", 0xFFA3CED2)
         );
+
+        //set id (normally autogenerated)
+        allProjects.get(0).setId(1);
+        allProjects.get(1).setId(2);
+        allProjects.get(2).setId(3);
 
         return allProjects;
     }
@@ -189,24 +389,24 @@ public class MainViewModelTest {
         taskWithProject1.setTask(task1);
 
         TaskWithProject taskWithProject2 = new TaskWithProject();
-        taskWithProject1.setProject(getAllProjectsForTest().get(1));
-        taskWithProject1.setTask(task2);
+        taskWithProject2.setProject(getAllProjectsForTest().get(1));
+        taskWithProject2.setTask(task2);
 
         TaskWithProject taskWithProject3 = new TaskWithProject();
-        taskWithProject1.setProject(getAllProjectsForTest().get(2));
-        taskWithProject1.setTask(task3);
+        taskWithProject3.setProject(getAllProjectsForTest().get(2));
+        taskWithProject3.setTask(task3);
 
         TaskWithProject taskWithProject4 = new TaskWithProject();
-        taskWithProject1.setProject(getAllProjectsForTest().get(0));
-        taskWithProject1.setTask(task4);
+        taskWithProject4.setProject(getAllProjectsForTest().get(0));
+        taskWithProject4.setTask(task4);
 
         TaskWithProject taskWithProject5 = new TaskWithProject();
-        taskWithProject1.setProject(getAllProjectsForTest().get(1));
-        taskWithProject1.setTask(task5);
+        taskWithProject5.setProject(getAllProjectsForTest().get(1));
+        taskWithProject5.setTask(task5);
 
         TaskWithProject taskWithProject6 = new TaskWithProject();
-        taskWithProject1.setProject(getAllProjectsForTest().get(2));
-        taskWithProject1.setTask(task6);
+        taskWithProject6.setProject(getAllProjectsForTest().get(2));
+        taskWithProject6.setTask(task6);
 
         List<TaskWithProject> allTaskWithProject = Arrays.asList(
                 taskWithProject1, taskWithProject2, taskWithProject3,
@@ -214,5 +414,32 @@ public class MainViewModelTest {
         );
 
         return allTaskWithProject;
+    }
+
+
+    //Setting AddEditTaskDialogViewState
+
+    private AddEditTaskDialogViewState getAddDialogViewState() {
+        return new AddEditTaskDialogViewState(R.string.add_task, "", 0, R.string.add);
+    }
+
+    private AddEditTaskDialogViewState getEditDialogViewStateForTestTask5() {
+        return new AddEditTaskDialogViewState(R.string.edit_task, "task 5", 1, R.string.edit);
+    }
+
+
+    //Setting EditText and Spinner
+
+    private EditText getEditText(String taskName) {
+        final EditText editText = mock(EditText.class);
+        when(editText.getText()).thenReturn(new MockEditable(taskName));
+        return editText;
+    }
+
+    private Spinner getSpinner() {
+        final Spinner spinner = mock(Spinner.class);
+        final Project project = allProjectsMutableLiveData.getValue().get(1);
+        doReturn(project).when(spinner).getSelectedItem();
+        return spinner;
     }
 }

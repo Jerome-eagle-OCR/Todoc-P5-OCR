@@ -119,7 +119,6 @@ public class MainViewModel extends ViewModel {
         }
         this.sortMethodMutableLiveData.setValue(sortMethod);
         sortTaskList();
-
     }
 
     /**
@@ -136,7 +135,7 @@ public class MainViewModel extends ViewModel {
      * launch view state setting
      */
     private void sortTaskList() {
-        List<TaskWithProject> sortedList = new ArrayList<>();
+        List<TaskWithProject> sortedList;
         Utils.SortMethod sorting = sortMethodMutableLiveData.getValue();
 
         switch (sorting) { // Method is not called when sort method is null
@@ -145,16 +144,14 @@ public class MainViewModel extends ViewModel {
                 sortedList = allTaskWithProject.getValue(); // List is pre-sorted from SQL request
                 break;
             case RECENT_FIRST:
-                sortedList.addAll(allTaskWithProject.getValue());
-                //sortedList.addAll(allTasksOldNew.getValue());
+                sortedList = new ArrayList<>(allTaskWithProject.getValue());
                 Collections.reverse(sortedList); // Pre-sorted list is reversed
                 break;
             case PROJECT_AZ:
-                sortedList.addAll(allTasksWithProjectAZ.getValue()); // List is pre-sorted from SQL request
-                //sortedList.addAll(allTasksProjectAZ.getValue()); // List is computed in repository
-                break;                                               // from embedded project list
+                sortedList = allTasksWithProjectAZ.getValue(); // List is pre-sorted from SQL request
+                break;
             default:
-                throw new IllegalStateException("Unexpected value: " + sortMethodMutableLiveData);
+                throw new IllegalStateException("Unexpected value: " + sortMethodMutableLiveData.getValue());
         }
 
         // Set the live data with the properly sorted list
@@ -198,6 +195,37 @@ public class MainViewModel extends ViewModel {
      */
     public LiveData<TaskListViewState> getTaskListViewState() {
         return taskListViewStateMutableLiveData;
+    }
+
+    /**
+     * Get the view state created to set properly the add, or edit, task dialog details
+     *
+     * @param taskToEdit the task to edit (or null if a task has to be created)
+     * @return the created view state
+     */
+    public AddEditTaskDialogViewState getAddEditDialogViewState(TaskWithProject taskToEdit) {
+        int dialogTitle; // The title of the dialog (add or edit purpose)
+        String dialogEditText; // The task name (empty or pre-filled)
+        int projectIndex; // The project to associate (first in list or pre-selected)
+        int positiveBtnTxt; // The text for the dialog positive button (add or edit)
+
+        // If editing is involved
+        if (taskToEdit != null) {
+            dialogTitle = R.string.edit_task;
+            dialogEditText = taskToEdit.getTask().getName();
+            Project taskProject = taskToEdit.getProject();
+            projectIndex = Objects.requireNonNull(allProjects.getValue()).indexOf(taskProject);
+            positiveBtnTxt = R.string.edit;
+        }
+        // If adding is involved
+        else {
+            dialogTitle = R.string.add_task;
+            dialogEditText = "";
+            projectIndex = 0;
+            positiveBtnTxt = R.string.add;
+        }
+        // Create and return a new adhoc view state
+        return new AddEditTaskDialogViewState(dialogTitle, dialogEditText, projectIndex, positiveBtnTxt);
     }
 
     /**
@@ -285,36 +313,5 @@ public class MainViewModel extends ViewModel {
      */
     public boolean getDialogDismiss() {
         return dialogDismiss;
-    }
-
-    /**
-     * Get the view state created to set properly the add, or edit, task dialog details
-     *
-     * @param taskToEdit the task to edit (or null if a task has to be created)
-     * @return the created view state
-     */
-    public AddEditTaskDialogViewState getAddEditDialogViewState(TaskWithProject taskToEdit) {
-        int dialogTitle; // The title of the dialog (add or edit purpose)
-        String dialogEditText; // The task name (empty or pre-filled)
-        int projectIndex; // The project to associate (first in list or pre-selected)
-        int positiveBtnTxt; // The text for the dialog positive button (add or edit)
-
-        // If editing is involved
-        if (taskToEdit != null) {
-            dialogTitle = R.string.edit_task;
-            dialogEditText = taskToEdit.getTask().getName();
-            Project taskProject = taskToEdit.getProject();
-            projectIndex = Objects.requireNonNull(allProjects.getValue()).indexOf(taskProject);
-            positiveBtnTxt = R.string.edit;
-        }
-        // If adding is involved
-        else {
-            dialogTitle = R.string.add_task;
-            dialogEditText = "";
-            projectIndex = 0;
-            positiveBtnTxt = R.string.add;
-        }
-        // Create and return a new adhoc view state
-        return new AddEditTaskDialogViewState(dialogTitle, dialogEditText, projectIndex, positiveBtnTxt);
     }
 }
