@@ -39,6 +39,9 @@ public class MainViewModel extends ViewModel {
 
     private boolean emptyTaskNameError;
     private String taskCreatedEditedMsg = null;
+    public static final String TASK_ADDED_SNK = "Tâche ajoutée";
+    public static final String NO_UPDATED_TASK_SNK = "Aucune tâche modifiée";
+    public static final String TASK_UPDATED_SNK = "Tâche modifiée";
     private boolean dialogDismiss;
 
 
@@ -114,10 +117,9 @@ public class MainViewModel extends ViewModel {
      * @param sortMethod the sorting method selected
      */
     public void setSorting(Utils.SortMethod sortMethod) {
-        if (sortMethod == null) { // Useful when starting the app
-            sortMethod = Utils.SortMethod.NONE;
+        if (sortMethod != null) { // Useful when clicking on menu icon
+            this.sortMethodMutableLiveData.setValue(sortMethod);
         }
-        this.sortMethodMutableLiveData.setValue(sortMethod);
         sortTaskList();
     }
 
@@ -138,7 +140,7 @@ public class MainViewModel extends ViewModel {
         List<TaskWithProject> sortedList;
         Utils.SortMethod sorting = sortMethodMutableLiveData.getValue();
 
-        switch (sorting) { // Method is not called when sort method is null
+        switch (sorting) { // Never null
             case OLD_FIRST:
             case NONE:
                 sortedList = allTaskWithProject.getValue(); // List is pre-sorted from SQL request
@@ -264,7 +266,7 @@ public class MainViewModel extends ViewModel {
 
                     //Manage the creation in the list of tasks
                     insertTask(new Task(projectId, taskName, timeStamp));
-                    taskCreatedEditedMsg = "Tâche ajoutée";
+                    taskCreatedEditedMsg = TASK_ADDED_SNK;
                 } else {
                     taskId = taskToEdit.getTask().getId();
                     timeStamp = taskToEdit.getTask().getCreationTimestamp();
@@ -273,10 +275,10 @@ public class MainViewModel extends ViewModel {
                     boolean taskNotModified = taskName.equals(taskToEdit.getTask().getName()) &&
                             projectId == taskToEdit.getTask().getProjectId();
                     if (taskNotModified) {
-                        taskCreatedEditedMsg = "Aucune tâche modifiée";
+                        taskCreatedEditedMsg = NO_UPDATED_TASK_SNK;
                     } else {
                         updateTask(new Task(taskId, projectId, taskName, timeStamp));
-                        taskCreatedEditedMsg = "Tâche modifiée";
+                        taskCreatedEditedMsg = TASK_UPDATED_SNK;
                     }
                 }
                 dialogDismiss = true; // Will null widgets and remove observers

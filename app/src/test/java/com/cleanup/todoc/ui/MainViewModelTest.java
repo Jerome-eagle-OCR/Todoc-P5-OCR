@@ -47,7 +47,9 @@ public class MainViewModelTest {
 
     private MainViewModel underTestMainViewModel;
 
+
     //MainViewModel LiveDatas from repositories to be mocked
+
     private final MutableLiveData<List<Project>> allProjectsMutableLiveData = new MutableLiveData<>();
     private final MutableLiveData<List<TaskWithProject>> allTaskWithProjectMutableLiveData = new MutableLiveData<>();
     private final MutableLiveData<List<TaskWithProject>> allTaskWithProjectAZMutableLiveData = new MutableLiveData<>();
@@ -70,6 +72,7 @@ public class MainViewModelTest {
     @After
     public void tearDown() throws Exception {
     }
+
 
     //Verifying ProjectRepository callings
 

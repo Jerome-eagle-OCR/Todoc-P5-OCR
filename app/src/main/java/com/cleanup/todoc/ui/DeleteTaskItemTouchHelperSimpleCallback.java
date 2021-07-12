@@ -61,13 +61,11 @@ public class DeleteTaskItemTouchHelperSimpleCallback extends ItemTouchHelper.Sim
             TaskWithProject taskToDelete = adapter.getTaskAtPosition(position);
             viewModel.deleteTask(taskToDelete.getTask());
 
-            String snackMessage = "Tâche supprimée";
-
-            Snackbar.make(taskItem, snackMessage, Snackbar.LENGTH_LONG)
+            Snackbar.make(taskItem, R.string.task_deleted_snk, Snackbar.LENGTH_LONG)
                     .setBackgroundTint(context.getResources().getColor(R.color.colorPrimaryDark))
                     .setAnchorView(fabAddTask)
                     .setActionTextColor(context.getResources().getColor(android.R.color.holo_green_light))
-                    .setAction("ANNULER", v -> {
+                    .setAction(R.string.undo_snk, v -> {
                         if (position == 0) {
                             adapter.notifyItemChanged(Integer.MIN_VALUE);
                             taskRecyclerview.postOnAnimation(this::scrollToFirstPosition);
