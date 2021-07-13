@@ -21,7 +21,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.ArrayList;
@@ -29,13 +28,16 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@SuppressWarnings("ResultOfMethodCallIgnored")
 @RunWith(MockitoJUnitRunner.class)
 public class MainViewModelTest {
 
@@ -79,7 +81,7 @@ public class MainViewModelTest {
     @Test
     public void verifyInsertProjectCallsProjectRepositoryInsert() {
         //Given :
-        Project projectToInsert = this.getAllProjectsForTest().get(0);
+        Project projectToInsert = this.allProjectsMutableLiveData.getValue().get(0);
         //When :
         underTestMainViewModel.insertProject(projectToInsert);
         //Then :
@@ -89,7 +91,7 @@ public class MainViewModelTest {
     @Test
     public void verifyDeleteProjectCallsProjectRepositoryDelete() {
         //Given :
-        Project projectToDelete = this.getAllProjectsForTest().get(0);
+        Project projectToDelete = this.allProjectsMutableLiveData.getValue().get(0);
         //When :
         underTestMainViewModel.deleteProject(projectToDelete);
         //Then :
@@ -231,7 +233,7 @@ public class MainViewModelTest {
     @Test
     public void givenATaskToEditThenGetAddEditDialogViewStateShouldReturnViewStateForEditingPurpose() {
         //Given :
-        TaskWithProject testTask5 = this.getAllTaskWithProjectForTest().get(4);
+        TaskWithProject testTask5 = this.allTaskWithProjectMutableLiveData.getValue().get(4);
         //When :
         underTestMainViewModel.getAddEditDialogViewState(testTask5);
         //Then :
@@ -248,7 +250,8 @@ public class MainViewModelTest {
         underTestMainViewModel.createEditTask(null, null, null);
         //Then :
         //No task should be created
-        verify(mockTaskRepository, times(0)).insert(Mockito.any(Task.class));
+        verify(mockTaskRepository, times(0)).insert(any(Task.class));
+        verify(mockTaskRepository, times(0)).update(any(Task.class));
         //Task name empty text error boolean should be false
         assert (!underTestMainViewModel.getEmptyTaskNameError());
         //Snackbar message should be empty
@@ -266,7 +269,8 @@ public class MainViewModelTest {
         underTestMainViewModel.createEditTask(null, editText, spinner);
         //Then :
         //No task should be created
-        verify(mockTaskRepository, times(0)).insert(Mockito.any(Task.class));
+        verify(mockTaskRepository, times(0)).insert(any(Task.class));
+        verify(mockTaskRepository, times(0)).update(any(Task.class));
         //Task name empty text error boolean should be true
         assert (underTestMainViewModel.getEmptyTaskNameError());
         //Snackbar message should be empty
@@ -284,11 +288,12 @@ public class MainViewModelTest {
         underTestMainViewModel.createEditTask(null, editText, spinner);
         //Then :
         //A task should be created
-        verify(mockTaskRepository, times(1)).insert(Mockito.any(Task.class));
+        verify(mockTaskRepository, times(1)).insert(any(Task.class));
+        verify(mockTaskRepository, times(0)).update(any(Task.class));
         //Task name empty text error boolean should be false
         assert (!underTestMainViewModel.getEmptyTaskNameError());
         //Snackbar message should announce that a task has been created
-        assert (underTestMainViewModel.getTaskCreatedEditedMsg().equals("Tâche ajoutée"));
+        assert (underTestMainViewModel.getTaskCreatedEditedMsg().equals(MainViewModel.TASK_ADDED_SNK));
         //Dialog dismiss boolean should be true
         assert (underTestMainViewModel.getDialogDismiss());
     }
@@ -296,19 +301,19 @@ public class MainViewModelTest {
     @Test
     public void givenATaskToEditButNoChangeThenCreateEditTaskShouldMeetAllAssertions() {
         //Given :
-        TaskWithProject testTask5 = this.getAllTaskWithProjectForTest().get(4);
+        TaskWithProject testTask5 = this.allTaskWithProjectMutableLiveData.getValue().get(4);
         EditText editText = getEditText(testTask5.getTask().getName());//Same name
         Spinner spinner = getSpinner();//Spinner is set to project "Lucidia" as testTask5"
         //When :
         underTestMainViewModel.createEditTask(testTask5, editText, spinner);
         //Then :
         //No task should be updated nor created
-        verify(mockTaskRepository, times(0)).update(testTask5.getTask());
-        verify(mockTaskRepository, times(0)).insert(testTask5.getTask());
+        verify(mockTaskRepository, times(0)).update(any(Task.class));
+        verify(mockTaskRepository, times(0)).insert(any(Task.class));
         //Task name empty text error boolean should be false
         assert (!underTestMainViewModel.getEmptyTaskNameError());
         //Snackbar message should announce that no task has been updated
-        assert (underTestMainViewModel.getTaskCreatedEditedMsg().equals("Aucune tâche modifiée"));
+        assert (underTestMainViewModel.getTaskCreatedEditedMsg().equals(MainViewModel.NO_UPDATED_TASK_SNK));
         //Dialog dismiss boolean should be true
         assert (underTestMainViewModel.getDialogDismiss());
     }
@@ -316,18 +321,19 @@ public class MainViewModelTest {
     @Test
     public void givenATaskToEditThenCreateEditTaskShouldMeetAllAssertions() {
         //Given :
-        TaskWithProject testTask5 = this.getAllTaskWithProjectForTest().get(4);
-        EditText editText = getEditText("any name");//Different name
-        Spinner spinner = getSpinner();//Spinner is set to project "Lucidia" as testTask5"
+        TaskWithProject testTask5 = this.allTaskWithProjectMutableLiveData.getValue().get(4);
+        EditText editText = this.getEditText("Different name");//Different name
+        Spinner spinner = this.getSpinner();//Spinner is set to project "Lucidia" as testTask5"
         //When :
         underTestMainViewModel.createEditTask(testTask5, editText, spinner);
         //Then :
         //The task should be updated
-        verify(mockTaskRepository, times(1)).update(Mockito.any(Task.class));
+        verify(mockTaskRepository, times(0)).insert(any(Task.class));
+        verify(mockTaskRepository, times(1)).update(any(Task.class));
         //Task name empty text error boolean should be false
         assert (!underTestMainViewModel.getEmptyTaskNameError());
         //Snackbar message should announce that the task has been updated
-        assert (underTestMainViewModel.getTaskCreatedEditedMsg().equals("Tâche modifiée"));
+        assert (underTestMainViewModel.getTaskCreatedEditedMsg().equals(MainViewModel.TASK_UPDATED_SNK));
         //Dialog dismiss boolean should be true
         assert (underTestMainViewModel.getDialogDismiss());
     }
@@ -411,12 +417,10 @@ public class MainViewModelTest {
         taskWithProject6.setProject(getAllProjectsForTest().get(2));
         taskWithProject6.setTask(task6);
 
-        List<TaskWithProject> allTaskWithProject = Arrays.asList(
+        return Arrays.asList(
                 taskWithProject1, taskWithProject2, taskWithProject3,
                 taskWithProject4, taskWithProject5, taskWithProject6
         );
-
-        return allTaskWithProject;
     }
 
 
@@ -441,7 +445,7 @@ public class MainViewModelTest {
 
     private Spinner getSpinner() {
         final Spinner spinner = mock(Spinner.class);
-        final Project project = allProjectsMutableLiveData.getValue().get(1);
+        final Project project = Objects.requireNonNull(allProjectsMutableLiveData.getValue()).get(1);
         doReturn(project).when(spinner).getSelectedItem();
         return spinner;
     }

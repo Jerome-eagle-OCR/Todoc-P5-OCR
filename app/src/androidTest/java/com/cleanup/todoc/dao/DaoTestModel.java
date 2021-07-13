@@ -1,4 +1,4 @@
-package com.cleanup.todoc;
+package com.cleanup.todoc.dao;
 
 import android.graphics.Color;
 
@@ -7,7 +7,7 @@ import com.cleanup.todoc.model.entity.Task;
 
 import java.util.Calendar;
 
-public class TestModel {
+public class DaoTestModel {
 
     //Test projects
 

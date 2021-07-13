@@ -23,13 +23,13 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.cleanup.todoc.TestModel.FIRST_POSITION;
-import static com.cleanup.todoc.TestModel.PROJECT_ENTREVOISINS;
-import static com.cleanup.todoc.TestModel.PROJECT_ENTREVOISINS_ID;
-import static com.cleanup.todoc.TestModel.PROJECT_MAGICGITHUB;
-import static com.cleanup.todoc.TestModel.PROJECT_MAGICGITHUB_ID;
-import static com.cleanup.todoc.TestModel.PROJECT_MAREU;
-import static com.cleanup.todoc.TestModel.PROJECT_MAREU_ID;
+import static com.cleanup.todoc.dao.DaoTestModel.FIRST_POSITION;
+import static com.cleanup.todoc.dao.DaoTestModel.PROJECT_ENTREVOISINS;
+import static com.cleanup.todoc.dao.DaoTestModel.PROJECT_ENTREVOISINS_ID;
+import static com.cleanup.todoc.dao.DaoTestModel.PROJECT_MAGICGITHUB;
+import static com.cleanup.todoc.dao.DaoTestModel.PROJECT_MAGICGITHUB_ID;
+import static com.cleanup.todoc.dao.DaoTestModel.PROJECT_MAREU;
+import static com.cleanup.todoc.dao.DaoTestModel.PROJECT_MAREU_ID;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 

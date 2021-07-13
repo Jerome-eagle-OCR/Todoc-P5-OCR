@@ -35,7 +35,7 @@ public class TaskRepositoryTest {
         //When :
         underTestTaskRepository.insert(TASK_MOCKITO);
         //Then :
-        verify(mockTaskDao, after(50).times(1)).insert(TASK_MOCKITO);
+        verify(mockTaskDao, after(100).times(1)).insert(TASK_MOCKITO);
     }
 
     @Test
@@ -44,7 +44,7 @@ public class TaskRepositoryTest {
         //When :
         underTestTaskRepository.update(TASK_MOCKITO);
         //Then :
-        verify(mockTaskDao, after(50).times(1)).update(TASK_MOCKITO);
+        verify(mockTaskDao, after(100).times(1)).update(TASK_MOCKITO);
     }
 
     @Test
@@ -53,7 +53,7 @@ public class TaskRepositoryTest {
         //When :
         underTestTaskRepository.delete(TASK_MOCKITO);
         //Then :
-        verify(mockTaskDao, after(50).times(1)).delete(TASK_MOCKITO);
+        verify(mockTaskDao, after(100).times(1)).delete(TASK_MOCKITO);
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")

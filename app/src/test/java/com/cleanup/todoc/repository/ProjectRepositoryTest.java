@@ -37,7 +37,7 @@ public class ProjectRepositoryTest {
         //When :
         underTestProjectRepository.insert(PROJECT_MOCKITO);
         //Then :
-        verify(mockProjectDao, after(50).times(1)).insert(PROJECT_MOCKITO);
+        verify(mockProjectDao, after(100).times(1)).insert(PROJECT_MOCKITO);
     }
 
     @Test
@@ -47,7 +47,7 @@ public class ProjectRepositoryTest {
         //When :
         underTestProjectRepository.delete(PROJECT_MOCKITO);
         //Then :
-        verify(mockProjectDao, after(50).times(1)).delete(PROJECT_MOCKITO);
+        verify(mockProjectDao, after(100).times(1)).delete(PROJECT_MOCKITO);
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")

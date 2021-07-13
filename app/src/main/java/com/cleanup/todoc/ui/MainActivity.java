@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
@@ -286,5 +287,10 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.EditT
 
         boolean dialogDismiss = viewModel.getDialogDismiss();
         if (dialogDismiss) dialogInterface.dismiss();
+    }
+
+    @VisibleForTesting
+    public int getTaskAdapterCount() {
+        return adapter.getCurrentList().size();
     }
 }
