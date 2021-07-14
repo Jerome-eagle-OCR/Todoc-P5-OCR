@@ -145,6 +145,27 @@ public class MainViewModelTest {
     //Testing scenarios for setSorting(SortMethod)
 
     @Test
+    public void givenNoTaskThenSetSortingNullShouldNotBeTakenIntoAccount() {
+        //Given :
+        allTaskWithProjectMutableLiveData.setValue(new ArrayList<>());
+        allTaskWithProjectAZMutableLiveData.setValue(new ArrayList<>());
+        //When :
+        underTestMainViewModel.setSorting(null);
+        //Then :
+        assert (underTestMainViewModel.getSortMethod().getValue() != null);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void givenNoTaskThenSetUnexpectedSortingShouldThrowException() {
+        //Given :
+        allTaskWithProjectMutableLiveData.setValue(new ArrayList<>());
+        allTaskWithProjectAZMutableLiveData.setValue(new ArrayList<>());
+        //When :
+        underTestMainViewModel.setSorting(Utils.SortMethod.UNEXPECTED_SORTING);
+        //Then : illegal state exception is thrown
+    }
+
+    @Test
     public void givenNoTaskThenSetSortingAnySortMethodShouldMeetAllAssertions() {
         //Given :
         allTaskWithProjectMutableLiveData.setValue(new ArrayList<>());
@@ -167,7 +188,7 @@ public class MainViewModelTest {
         underTestMainViewModel.setSorting(Utils.SortMethod.NONE);
         //Then :
         assert (underTestMainViewModel.getSortMethod().getValue() == Utils.SortMethod.NONE);
-        //The task list to be displayed is full and properly sorted
+        //The task list to be displayed is complete and properly sorted
         assert (underTestMainViewModel.getSortedList().getValue() == allTaskWithProjectMutableLiveData.getValue());
         //No task label is gone and the task list is visible
         assert (underTestMainViewModel.getTaskListViewState().getValue().getNoTaskLblVisibility() == View.GONE);
@@ -181,7 +202,7 @@ public class MainViewModelTest {
         underTestMainViewModel.setSorting(Utils.SortMethod.OLD_FIRST);
         //Then :
         assert (underTestMainViewModel.getSortMethod().getValue() == Utils.SortMethod.OLD_FIRST);
-        //The task list to be displayed is full and properly sorted
+        //The task list to be displayed is complete and properly sorted
         assert (underTestMainViewModel.getSortedList().getValue() == allTaskWithProjectMutableLiveData.getValue());
         //No task label is gone and the task list is visible
         assert (underTestMainViewModel.getTaskListViewState().getValue().getNoTaskLblVisibility() == View.GONE);
@@ -195,7 +216,7 @@ public class MainViewModelTest {
         underTestMainViewModel.setSorting(Utils.SortMethod.RECENT_FIRST);
         //Then :
         assert (underTestMainViewModel.getSortMethod().getValue() == Utils.SortMethod.RECENT_FIRST);
-        //The task list to be displayed is full and properly sorted
+        //The task list to be displayed is complete and properly sorted
         List<TaskWithProject> expectedSortedList = new ArrayList<>(this.allTaskWithProjectMutableLiveData.getValue());
         Collections.reverse(expectedSortedList); //Get a list sorted by date descending
         assert (underTestMainViewModel.getSortedList().getValue().equals(expectedSortedList));
@@ -211,7 +232,7 @@ public class MainViewModelTest {
         underTestMainViewModel.setSorting(Utils.SortMethod.PROJECT_AZ);
         //Then :
         assert (underTestMainViewModel.getSortMethod().getValue() == Utils.SortMethod.PROJECT_AZ);
-        //The task list to be displayed is full and properly sorted
+        //The task list to be displayed is complete and properly sorted
         assert (underTestMainViewModel.getSortedList().getValue() == this.allTaskWithProjectAZMutableLiveData.getValue());
         //No task label is gone and the task list is visible
         assert (underTestMainViewModel.getTaskListViewState().getValue().getNoTaskLblVisibility() == View.GONE);
@@ -249,9 +270,27 @@ public class MainViewModelTest {
         //When :
         underTestMainViewModel.createEditTask(null, null, null);
         //Then :
-        //No task should be created
+        //No task should be created nor edited
         verify(mockTaskRepository, times(0)).insert(any(Task.class));
         verify(mockTaskRepository, times(0)).update(any(Task.class));
+        //Task name empty text error boolean should be false
+        assert (!underTestMainViewModel.getEmptyTaskNameError());
+        //Snackbar message should be empty
+        assert (underTestMainViewModel.getTaskCreatedEditedMsg().isEmpty());
+        //Dialog dismiss boolean should be true
+        assert (underTestMainViewModel.getDialogDismiss());
+    }
+
+    @Test
+    public void givenATaskToEditNullEditTextNullSpinnerThenCreateEditTaskShouldMeetAllAssertions() {
+        //Given :
+        TaskWithProject testTask5 = this.allTaskWithProjectMutableLiveData.getValue().get(4);
+        //When :
+        underTestMainViewModel.createEditTask(testTask5, null, null);
+        //Then :
+        //No task should be created nor edited
+        verify(mockTaskRepository, times(0)).insert(testTask5.getTask());
+        verify(mockTaskRepository, times(0)).update(testTask5.getTask());
         //Task name empty text error boolean should be false
         assert (!underTestMainViewModel.getEmptyTaskNameError());
         //Snackbar message should be empty
@@ -268,10 +307,10 @@ public class MainViewModelTest {
         //When :
         underTestMainViewModel.createEditTask(null, editText, spinner);
         //Then :
-        //No task should be created
+        //No task should be created nor edited
         verify(mockTaskRepository, times(0)).insert(any(Task.class));
         verify(mockTaskRepository, times(0)).update(any(Task.class));
-        //Task name empty text error boolean should be true
+        //Task name empty error boolean should be true
         assert (underTestMainViewModel.getEmptyTaskNameError());
         //Snackbar message should be empty
         assert (underTestMainViewModel.getTaskCreatedEditedMsg().isEmpty());
@@ -290,7 +329,7 @@ public class MainViewModelTest {
         //A task should be created
         verify(mockTaskRepository, times(1)).insert(any(Task.class));
         verify(mockTaskRepository, times(0)).update(any(Task.class));
-        //Task name empty text error boolean should be false
+        //Task name empty error boolean should be false
         assert (!underTestMainViewModel.getEmptyTaskNameError());
         //Snackbar message should announce that a task has been created
         assert (underTestMainViewModel.getTaskCreatedEditedMsg().equals(MainViewModel.TASK_ADDED_SNK));
@@ -328,8 +367,8 @@ public class MainViewModelTest {
         underTestMainViewModel.createEditTask(testTask5, editText, spinner);
         //Then :
         //The task should be updated
-        verify(mockTaskRepository, times(0)).insert(any(Task.class));
         verify(mockTaskRepository, times(1)).update(any(Task.class));
+        verify(mockTaskRepository, times(0)).insert(any(Task.class));
         //Task name empty text error boolean should be false
         assert (!underTestMainViewModel.getEmptyTaskNameError());
         //Snackbar message should announce that the task has been updated
@@ -424,7 +463,7 @@ public class MainViewModelTest {
     }
 
 
-    //Setting AddEditTaskDialogViewState
+    //Setting expected AddEditTaskDialogViewState
 
     private AddEditTaskDialogViewState getAddDialogViewState() {
         return new AddEditTaskDialogViewState(R.string.add_task, "", 0, R.string.add);

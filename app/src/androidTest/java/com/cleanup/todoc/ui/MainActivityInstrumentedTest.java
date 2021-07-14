@@ -19,7 +19,6 @@ import static androidx.test.espresso.action.ViewActions.longClick;
 import static androidx.test.espresso.action.ViewActions.replaceText;
 import static androidx.test.espresso.action.ViewActions.swipeRight;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
-import static androidx.test.espresso.matcher.ViewMatchers.hasChildCount;
 import static androidx.test.espresso.matcher.ViewMatchers.hasDescendant;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
@@ -62,7 +61,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * Instrumented test, which will execute on an Android device.
  *
- * @author Gaëtan HERFRAY
+ * @author Gaëtan HERFRAY totally refactored by Jérôme Rigault
  * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
  */
 @RunWith(AndroidJUnit4.class)
@@ -81,7 +80,7 @@ public class MainActivityInstrumentedTest {
     }
 
     @Test
-    public void addAndRemoveAndUndoRemoveTaskSuccessfully() {
+    public void addTaskAndRemoveItAndUndoRemoveSuccessfully() {
         // We check "no task" label is displayed
         this.assertNoTaskVisibility();
 
@@ -98,8 +97,7 @@ public class MainActivityInstrumentedTest {
         this.deleteTask(ZERO);
 
         //Adapter list should be empty
-        activityScenario.onActivity(activity -> assertEquals(ZERO,
-                activity.getTaskAdapterCount()));
+        this.assertTaskCount(ZERO);
 
         // We check "no task" label is displayed
         this.assertNoTaskVisibility();
@@ -132,7 +130,7 @@ public class MainActivityInstrumentedTest {
         onView(withRecyclerView(R.id.list_tasks).atPosition(ZERO)).perform(longClick());
 
         // We update the task to correct its name and associated project
-        this.updateTask(true, CIRCUS_PROJECT_INDEX, CORRECTED_TASK_NAME);
+        this.editTask(true, CIRCUS_PROJECT_INDEX, CORRECTED_TASK_NAME);
 
         //The task name has been properly updated
         onView(withRecyclerView(R.id.list_tasks)
@@ -151,7 +149,7 @@ public class MainActivityInstrumentedTest {
         this.assertNoTaskVisibility();
 
         //We add a new task
-        addTask(CIRCUS_PROJECT_INDEX, ADD_TASK_NAME);
+        this.addTask(CIRCUS_PROJECT_INDEX, ADD_TASK_NAME);
 
         // We check that "no task" label is not anymore displayed but now task list is
         this.assertAtLeastOneTaskVisibility();
@@ -163,7 +161,7 @@ public class MainActivityInstrumentedTest {
         onView(withRecyclerView(R.id.list_tasks).atPosition(ZERO)).perform(longClick());
 
         //We fakely modify the task name
-        this.updateTask(false, CIRCUS_PROJECT_INDEX, ADD_TASK_NAME);
+        this.editTask(false, CIRCUS_PROJECT_INDEX, ADD_TASK_NAME);
 
         //The task has not changed, same task name, same project name
         onView(withRecyclerView(R.id.list_tasks)
@@ -182,7 +180,9 @@ public class MainActivityInstrumentedTest {
         assertNoTaskVisibility();
 
         // We add Circus project tasks
-        addTasks(CIRCUS_PROJECT_INDEX, CIRCUS_TASK1, CIRCUS_TASK2, CIRCUS_TASK3);
+        addTask(CIRCUS_PROJECT_INDEX, CIRCUS_TASK1);
+        addTask(CIRCUS_PROJECT_INDEX, CIRCUS_TASK2);
+        addTask(CIRCUS_PROJECT_INDEX, CIRCUS_TASK3);
 
         // Check we have 3 tasks
         this.assertTaskCount(THREE);
@@ -204,12 +204,17 @@ public class MainActivityInstrumentedTest {
         // Then sorting must be recent first
         this.assertNewOldSorting();
 
-        // We add Lucidia and Tartampion projects tasks to test sorting grouped by project
-        addTasks(LUCIDIA_PROJECT_INDEX, LUCIDIA_TASK1, LUCIDIA_TASK2, LUCIDIA_TASK3);
-        addTasks(TARTAMPION_PROJECT_INDEX, TARTAMPION_TASK1, TARTAMPION_TASK2, TARTAMPION_TASK3);
+        // We add Lucidia and Tartampion projects tasks alternatively* to test sorting grouped by project
+        // * otherwise tasks would be already grouped by projects
+        this.addTask(LUCIDIA_PROJECT_INDEX, LUCIDIA_TASK1);
+        this.addTask(TARTAMPION_PROJECT_INDEX, TARTAMPION_TASK1);
+        this.addTask(LUCIDIA_PROJECT_INDEX, LUCIDIA_TASK2);
+        this.addTask(TARTAMPION_PROJECT_INDEX, TARTAMPION_TASK2);
+        this.addTask(LUCIDIA_PROJECT_INDEX, LUCIDIA_TASK3);
+        this.addTask(TARTAMPION_PROJECT_INDEX, TARTAMPION_TASK3);
 
         // Check we have now 9 tasks
-        activityScenario.onActivity(activity -> assertEquals(NINE, activity.getTaskAdapterCount()));
+        assertTaskCount(NINE);
 
         // We set grouped by project sorting by clicking the option in the menu
         onView(withId(R.id.action_sort)).perform(click());
@@ -220,21 +225,21 @@ public class MainActivityInstrumentedTest {
     }
 
 
-    private void addTasks(int projectPosition,
-                          String taskName1, String taskName2, String taskName3) {
-        addTask(projectPosition, taskName1);
-        addTask(projectPosition, taskName2);
-        addTask(projectPosition, taskName3);
-    }
-
     private void addTask(int projectPosition, String taskName) {
+        // We click on the add fab button
         onView(withId(R.id.fab_add_task)).perform(click());
+        // We check dialog title and positive button name
+        onView(withId(R.id.alertTitle)).check(matches(withText(R.string.add_task)));
+        onView(withId(android.R.id.button1)).check(matches(withText(R.string.add)));
+        // We add the task name
         onView(withId(R.id.txt_task_name)).perform(replaceText(taskName));
+        // We select the project
         onView(withId(R.id.project_spinner)).perform(click());
         onData(anything())
                 .atPosition(projectPosition)
                 .inRoot(RootMatchers.isPlatformPopup())
                 .perform(click());
+        // We validate task adding clicking dialog positive button
         onView(withId(android.R.id.button1)).perform(click());
 
         //A snackbar is displayed to confirm creation
@@ -249,16 +254,22 @@ public class MainActivityInstrumentedTest {
         onView(withText(R.string.task_deleted_snk)).check(matches(isDisplayed()));
     }
 
-    private void updateTask(boolean updated, int projectPosition, String taskName) {
+    private void editTask(boolean updated, int projectPosition, String taskName) {
+        // We check dialog title and positive button name
+        onView(withId(R.id.alertTitle)).check(matches(withText(R.string.edit_task)));
+        onView(withId(android.R.id.button1)).check(matches(withText(R.string.edit)));
+        // We change the task name
         onView(withId(R.id.txt_task_name)).perform(replaceText(taskName));
+        // We change the project
         onView(withId(R.id.project_spinner)).perform(click());
         onData(anything())
                 .atPosition(projectPosition)
                 .inRoot(RootMatchers.isPlatformPopup())
                 .perform(click());
+        // We validate task editing clicking dialog positive button
         onView(withId(android.R.id.button1)).perform(click());
 
-        //A snackbar is displayed to confirm updating
+        //A snackbar is displayed to confirm updating or inform that no task has been modified
         if (updated) {
             this.assertSnackbarMsg(TASK_UPDATED_SNK);
         } else {
@@ -290,7 +301,7 @@ public class MainActivityInstrumentedTest {
     }
 
     private void assertTaskCount(int count) {
-        if (count != ZERO) onView(withId(R.id.list_tasks)).check(matches(hasChildCount(count)));
+            activityScenario.onActivity(activity -> assertEquals(count, activity.getTaskAdapterCount()));
     }
 
     private void assertOldNewSorting() {

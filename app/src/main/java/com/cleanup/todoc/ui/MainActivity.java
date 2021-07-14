@@ -22,7 +22,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.cleanup.todoc.R;
-import com.cleanup.todoc.Utils;
 import com.cleanup.todoc.ViewModelFactory;
 import com.cleanup.todoc.databinding.ActivityMainBinding;
 import com.cleanup.todoc.databinding.DialogAddTaskBinding;
@@ -32,6 +31,8 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.util.List;
+
+import static com.cleanup.todoc.Utils.SortMethod;
 
 /**
  * <p>Home activity of the application which is displayed when the user opens the app.</p>
@@ -50,6 +51,11 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.EditT
      * List of all current tasks, including bound project, of the application
      */
     private List<TaskWithProject> mTasks;
+
+    /**
+     * Current sorting method (valorized by viewmodel livedata)
+     */
+    private SortMethod sortMethod;
 
     /**
      * The adapter which handles the list of tasks
@@ -126,13 +132,9 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.EditT
 
         // Scroll list to top when a sorting is selected
         viewModel.getSortMethod().observe(this, sortMethod -> {
+            this.sortMethod = sortMethod;
             taskRecyclerview.smoothScrollToPosition(Integer.MIN_VALUE);
         });
-
-/*        // Submit up to date projects to the task list adapter
-        viewModel.getProjectsMappedById().observe(this, longProjectHashMap -> {
-            adapter.submitProjects(longProjectHashMap);
-        });*/
 
         // Observe up to date project list to populate project spinner
         viewModel.getAllProjects().observe(this,
@@ -171,14 +173,14 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.EditT
         int id = item.getItemId();
 
         // The sort method to be used to display tasks
-        Utils.SortMethod sortMethod = null;
+        SortMethod sortMethod = null;
 
         if (id == R.id.sort_by_project) {
-            sortMethod = Utils.SortMethod.PROJECT_AZ;
+            sortMethod = SortMethod.PROJECT_AZ;
         } else if (id == R.id.sort_oldest_first) {
-            sortMethod = Utils.SortMethod.OLD_FIRST;
+            sortMethod = SortMethod.OLD_FIRST;
         } else if (id == R.id.sort_recent_first) {
-            sortMethod = Utils.SortMethod.RECENT_FIRST;
+            sortMethod = SortMethod.RECENT_FIRST;
         }
 
         // Sort method is set in VM which takes care of sorting the list
@@ -274,7 +276,9 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.EditT
 
         // emptyTaskNameError is false if dialogEditText is null
         boolean emptyTaskNameError = viewModel.getEmptyTaskNameError();
-        if (emptyTaskNameError) dialogEditText.setError(getString(R.string.empty_task_name));
+        if (emptyTaskNameError && dialogEditText != null) {
+            dialogEditText.setError(getString(R.string.empty_task_name));
+        }
 
         // Snack the taskCreatedEditedMsg if not empty
         String snackThis = viewModel.getTaskCreatedEditedMsg();
@@ -284,6 +288,10 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.EditT
                     .setAnchorView(fabAddTask)
             .show();
         }
+        // When list is sorted recent tasks first scroll to first position after adding a new task
+        if (snackThis.equals(MainViewModel.TASK_ADDED_SNK) && sortMethod == SortMethod.RECENT_FIRST) {
+            binding.listTasks.smoothScrollToPosition(Integer.MIN_VALUE);
+        }
 
         boolean dialogDismiss = viewModel.getDialogDismiss();
         if (dialogDismiss) dialogInterface.dismiss();
@@ -291,6 +299,6 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.EditT
 
     @VisibleForTesting
     public int getTaskAdapterCount() {
-        return adapter.getCurrentList().size();
+        return adapter.getItemCount();
     }
 }

@@ -53,31 +53,31 @@ public class DaoTestModel {
     public static final int TASK_MAKE_TESTS_PASS_PROJECT_ID = 1;
     public static final String TASK_MAKE_TESTS_PASS_NAME = "Faire passer les tests au vert";
     public static final long TASK_MAKE_TESTS_PASS_TIMESTAMP = Calendar.getInstance().getTimeInMillis();
-    public static final Task TASK_MAKE_TESTS_PASS =
-            new Task(TASK_MAKE_TESTS_PASS_PROJECT_ID,
-                    TASK_MAKE_TESTS_PASS_NAME,
-                    TASK_MAKE_TESTS_PASS_TIMESTAMP
-            );
+    public static final Task TASK_MAKE_TESTS_PASS = new Task(
+            TASK_MAKE_TESTS_PASS_PROJECT_ID,
+            TASK_MAKE_TESTS_PASS_NAME,
+            TASK_MAKE_TESTS_PASS_TIMESTAMP
+    );
 
     //Task "add a new functionality"
     public static final long TASK_NEIGHBOUR_DETAILS_ID = 2;
     public static final int TASK_NEIGHBOUR_DETAILS_PROJECT_ID = 2;
     public static final String TASK_NEIGHBOUR_DETAILS_NAME = "Ajouter une nouvelle fonctionnalité";
     public static final long TASK_NEIGHBOUR_DETAILS_TIMESTAMP = TASK_MAKE_TESTS_PASS_TIMESTAMP + DELAY;
-    public static final Task TASK_NEIGHBOUR_DETAILS =
-            new Task(TASK_NEIGHBOUR_DETAILS_PROJECT_ID,
-                    TASK_NEIGHBOUR_DETAILS_NAME,
-                    TASK_NEIGHBOUR_DETAILS_TIMESTAMP
-            );
+    public static final Task TASK_NEIGHBOUR_DETAILS = new Task(
+            TASK_NEIGHBOUR_DETAILS_PROJECT_ID,
+            TASK_NEIGHBOUR_DETAILS_NAME,
+            TASK_NEIGHBOUR_DETAILS_TIMESTAMP
+    );
 
     //Task "create a meeting management app"
     public static final long TASK_CREATE_MEETING_APP_ID = 3;
     public static final int TASK_CREATE_MEETING_APP_PROJECT_ID = 3;
     public static final String TASK_CREATE_MEETING_APP_NAME = "Créer une app de gestion de réunions";
     public static final long TASK_CREATE_MEETING_APP_TIMESTAMP = TASK_NEIGHBOUR_DETAILS_TIMESTAMP + DELAY;
-    public static final Task TASK_CREATE_MEETING_APP =
-            new Task(TASK_CREATE_MEETING_APP_PROJECT_ID,
-                    TASK_CREATE_MEETING_APP_NAME,
-                    TASK_CREATE_MEETING_APP_TIMESTAMP
-            );
+    public static final Task TASK_CREATE_MEETING_APP = new Task(
+            TASK_CREATE_MEETING_APP_PROJECT_ID,
+            TASK_CREATE_MEETING_APP_NAME,
+            TASK_CREATE_MEETING_APP_TIMESTAMP
+    );
 }

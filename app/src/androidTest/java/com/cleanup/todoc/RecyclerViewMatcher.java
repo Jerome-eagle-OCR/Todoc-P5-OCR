@@ -14,6 +14,7 @@ import org.hamcrest.TypeSafeMatcher;
  *
  * @see https://github.com/dannyroa/espresso-samples/blob/master/RecyclerView/app/src/androidTest/java/com/dannyroa/espresso_samples/recyclerview/RecyclerViewMatcher.java
  */
+@SuppressWarnings("JavadocReference")
 public class RecyclerViewMatcher {
     private final int recyclerViewId;
 

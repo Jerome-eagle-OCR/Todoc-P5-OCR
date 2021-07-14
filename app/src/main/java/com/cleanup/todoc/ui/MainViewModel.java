@@ -146,21 +146,21 @@ public class MainViewModel extends ViewModel {
                 sortedList = allTaskWithProject.getValue(); // List is pre-sorted from SQL request
                 break;
             case RECENT_FIRST:
-                sortedList = new ArrayList<>(allTaskWithProject.getValue());
+                sortedList = new ArrayList<>(Objects.requireNonNull(allTaskWithProject.getValue()));
                 Collections.reverse(sortedList); // Pre-sorted list is reversed
                 break;
             case PROJECT_AZ:
                 sortedList = allTasksWithProjectAZ.getValue(); // List is pre-sorted from SQL request
                 break;
             default:
-                throw new IllegalStateException("Unexpected value: " + sortMethodMutableLiveData.getValue());
+                throw new IllegalStateException("Unexpected value: " + sorting);
         }
 
         // Set the live data with the properly sorted list
         sortedListForDisplayMediatorLiveData.setValue(sortedList);
 
         // Set task list view state depending on task list empty or not (null testing to avoid trouble)
-        if (sortedList != null) setTaskListViewState(sortedList);
+        setTaskListViewState(sortedList);
     }
 
     /**
@@ -178,7 +178,7 @@ public class MainViewModel extends ViewModel {
      * @param sortedTaskList the sorted task list
      */
     private void setTaskListViewState(List<TaskWithProject> sortedTaskList) {
-        boolean sortedTaskListEmpty = sortedTaskList.isEmpty();
+        boolean sortedTaskListEmpty = sortedTaskList == null || sortedTaskList.isEmpty();
 
         int taskListVisibility = sortedTaskListEmpty ? View.GONE : View.VISIBLE; //taskList not visible when list is empty and vice versa
         int noTaskLblVisibility = sortedTaskListEmpty ? View.VISIBLE : View.GONE; //noTaskLbl visible when list is empty and vice versa
@@ -273,7 +273,7 @@ public class MainViewModel extends ViewModel {
 
                     //Manage task update testing first if task is actually modified
                     boolean taskNotModified = taskName.equals(taskToEdit.getTask().getName()) &&
-                            projectId == taskToEdit.getTask().getProjectId();
+                            (projectId == taskToEdit.getTask().getProjectId());
                     if (taskNotModified) {
                         taskCreatedEditedMsg = NO_UPDATED_TASK_SNK;
                     } else {
@@ -281,7 +281,7 @@ public class MainViewModel extends ViewModel {
                         taskCreatedEditedMsg = TASK_UPDATED_SNK;
                     }
                 }
-                dialogDismiss = true; // Will null widgets and remove observers
+                dialogDismiss = true; // Will close dialog and null dialog, widgets and taskToEdit
             } else { // If name has been set, but project has not been set (this should never occur)
                 dialogDismiss = true;
             }

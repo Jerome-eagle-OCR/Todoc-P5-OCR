@@ -1,5 +1,7 @@
 package com.cleanup.todoc;
 
+import androidx.annotation.VisibleForTesting;
+
 public abstract class Utils {
 
     /**
@@ -21,6 +23,9 @@ public abstract class Utils {
         /**
          * No sort
          */
-        NONE
+        NONE,
+
+        @VisibleForTesting
+        UNEXPECTED_SORTING
     }
 }

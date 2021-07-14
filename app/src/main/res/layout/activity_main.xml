@@ -9,14 +9,14 @@
         android:id="@+id/lbl_no_task"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:drawableTop="@drawable/ic_work_off"
         android:text="@string/no_task"
         android:textSize="22sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:visibility="gone" />
+        tools:visibility="gone"
+        app:drawableTopCompat="@drawable/ic_work_off" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/list_tasks"

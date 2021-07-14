@@ -12,7 +12,6 @@ import com.cleanup.todoc.db.TodocDatabase;
 import com.cleanup.todoc.model.dao.ProjectDao;
 import com.cleanup.todoc.model.entity.Project;
 
-import org.hamcrest.collection.IsIterableContainingInOrder;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -30,7 +29,7 @@ import static com.cleanup.todoc.dao.DaoTestModel.PROJECT_MAGICGITHUB;
 import static com.cleanup.todoc.dao.DaoTestModel.PROJECT_MAGICGITHUB_ID;
 import static com.cleanup.todoc.dao.DaoTestModel.PROJECT_MAREU;
 import static com.cleanup.todoc.dao.DaoTestModel.PROJECT_MAREU_ID;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(AndroidJUnit4.class)
@@ -82,7 +81,7 @@ public class ProjectDaoTest {
         List<Project> actualProjects = LiveDataTestUtil.getValue(projectDao.getProjects());
 
         //Then : the retrieved list contains the three projects sorted by id (insertion order)
-        assertThat(actualProjects, IsIterableContainingInOrder.contains(expectedProjects.toArray()));
+        assertArrayEquals(expectedProjects.toArray(), actualProjects.toArray());
     }
 
     @Test
@@ -106,7 +105,7 @@ public class ProjectDaoTest {
         List<Project> actualProjects = LiveDataTestUtil.getValue(projectDao.getProjects());
 
         //Then : the retrieved list contains the two projects sorted by id (insertion order)
-        assertThat(actualProjects, IsIterableContainingInOrder.contains(expectedProjects.toArray()));
+        assertArrayEquals(expectedProjects.toArray(), actualProjects.toArray());
     }
 
     private void insertProjects() {

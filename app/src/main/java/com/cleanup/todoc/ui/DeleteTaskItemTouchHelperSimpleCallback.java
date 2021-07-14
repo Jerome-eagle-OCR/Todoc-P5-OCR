@@ -19,6 +19,8 @@ import com.google.android.material.snackbar.Snackbar;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Objects;
+
 public class DeleteTaskItemTouchHelperSimpleCallback extends ItemTouchHelper.SimpleCallback {
 
     private final MainViewModel viewModel;
@@ -66,11 +68,11 @@ public class DeleteTaskItemTouchHelperSimpleCallback extends ItemTouchHelper.Sim
                     .setAnchorView(fabAddTask)
                     .setActionTextColor(context.getResources().getColor(android.R.color.holo_green_light))
                     .setAction(R.string.undo_snk, v -> {
+                        viewModel.insertTask(taskToDelete.getTask());
                         if (position == 0) {
                             adapter.notifyItemChanged(Integer.MIN_VALUE);
                             taskRecyclerview.postOnAnimation(this::scrollToFirstPosition);
                         }
-                        viewModel.insertTask(taskToDelete.getTask());
                     }
             ).show();
         }
@@ -87,7 +89,7 @@ public class DeleteTaskItemTouchHelperSimpleCallback extends ItemTouchHelper.Sim
         ColorDrawable swipeLeftBkgnd = new ColorDrawable(context.getResources().getColor(android.R.color.holo_green_dark));
         Drawable deleteIcon = AppCompatResources.getDrawable(taskItem.getContext(), R.drawable.ic_delete);
 
-        int iconMargin = (taskItem.getHeight() - deleteIcon.getIntrinsicHeight()) / 2;
+        int iconMargin = (taskItem.getHeight() - Objects.requireNonNull(deleteIcon).getIntrinsicHeight()) / 2;
 
         if (dX > 0) {
             swipeRightBkgnd.setBounds(taskItem.getLeft(), taskItem.getTop(),

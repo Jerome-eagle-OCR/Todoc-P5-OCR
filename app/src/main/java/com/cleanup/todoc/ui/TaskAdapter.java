@@ -67,11 +67,11 @@ public class TaskAdapter extends ListAdapter<TaskWithProject, TaskAdapter.TaskVi
     }
 
     /**
-     * Getter to retrieve any task from its position in the list adapter
+     * Getter to retrieve any taskWithProject from its position in the list adapter
      * Useful for the ItemTouchHelper implemented in MainActivity, to delete a task swiping the item
      *
-     * @param position
-     * @return
+     * @param position position of taskWithProject in adapter
+     * @return the taskWithProject at the specified position
      */
     public TaskWithProject getTaskAtPosition(int position) {
         return getItem(position);

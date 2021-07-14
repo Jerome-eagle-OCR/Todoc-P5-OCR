@@ -34,7 +34,6 @@ public class Task {
      * The name of the task
      */
     // Suppress warning because setName is called in constructor
-    @NonNull
     @ColumnInfo(name = "name")
     private String name;
 
