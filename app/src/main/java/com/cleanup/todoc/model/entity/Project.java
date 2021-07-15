@@ -17,12 +17,13 @@ public class Project {
      * The unique identifier of the project
      */
     @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "projectId")
     private long id;
 
     /**
      * The name of the project
      */
-    @ColumnInfo(name = "name")
+    @ColumnInfo(name = "projectName")
     @NonNull
     private final String name;
 
@@ -93,13 +94,5 @@ public class Project {
         if (getId() != project.getId()) return false;
         if (getColor() != project.getColor()) return false;
         return getName().equals(project.getName());
-    }
-
-    @Override
-    public int hashCode() {
-        int result = (int) (getId() ^ (getId() >>> 32));
-        result = 31 * result + getName().hashCode();
-        result = 31 * result + getColor();
-        return result;
     }
 }

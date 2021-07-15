@@ -11,7 +11,7 @@ public class TaskWithProject {
     private Task task;
     @Relation(
             parentColumn = "project_id",
-            entityColumn = "id",
+            entityColumn = "projectId",
             entity = Project.class
     )
     private Project project;
@@ -30,23 +30,5 @@ public class TaskWithProject {
 
     public void setProject(Project project) {
         this.project = project;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        TaskWithProject that = (TaskWithProject) o;
-
-        if (!getTask().equals(that.getTask())) return false;
-        return getProject().equals(that.getProject());
-    }
-
-    @Override
-    public int hashCode() {
-        int result = getTask().hashCode();
-        result = 31 * result + getProject().hashCode();
-        return result;
     }
 }

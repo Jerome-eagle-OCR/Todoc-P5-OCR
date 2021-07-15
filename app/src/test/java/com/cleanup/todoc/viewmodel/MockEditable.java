@@ -1,9 +1,11 @@
-package com.cleanup.todoc.ui;
+package com.cleanup.todoc.viewmodel;
 
 import android.text.Editable;
 import android.text.InputFilter;
 
 import androidx.annotation.NonNull;
+
+import org.jetbrains.annotations.NotNull;
 
 public class MockEditable implements Editable {
 
@@ -28,7 +30,7 @@ public class MockEditable implements Editable {
     }
 
     @Override
-    public CharSequence subSequence(int i, int i1) {
+    public @NotNull CharSequence subSequence(int i, int i1) {
         return str.subSequence(i, i1);
     }
 
@@ -58,17 +60,17 @@ public class MockEditable implements Editable {
     }
 
     @Override
-    public Editable append(CharSequence charSequence) {
+    public @NotNull Editable append(CharSequence charSequence) {
         return this;
     }
 
     @Override
-    public Editable append(CharSequence charSequence, int i, int i1) {
+    public @NotNull Editable append(CharSequence charSequence, int i, int i1) {
         return this;
     }
 
     @Override
-    public Editable append(char c) {
+    public @NotNull Editable append(char c) {
         return this;
     }
 

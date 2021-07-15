@@ -1,4 +1,4 @@
-package com.cleanup.todoc.ui;
+package com.cleanup.todoc.viewmodel;
 
 import android.view.View;
 import android.widget.EditText;
@@ -14,6 +14,8 @@ import com.cleanup.todoc.model.entity.Task;
 import com.cleanup.todoc.model.entity.relation.TaskWithProject;
 import com.cleanup.todoc.model.repository.ProjectRepository;
 import com.cleanup.todoc.model.repository.TaskRepository;
+import com.cleanup.todoc.ui.AddEditTaskDialogViewState;
+import com.cleanup.todoc.ui.MainViewModel;
 
 import org.junit.After;
 import org.junit.Before;

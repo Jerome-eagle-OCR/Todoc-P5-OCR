@@ -13,7 +13,7 @@ import androidx.room.PrimaryKey;
  * @author Gaëtan HERFRAY / Modified by Jérôme Rigault
  */
 @Entity(tableName = "task_table", foreignKeys = {@ForeignKey(entity = Project.class,
-        parentColumns = "id",
+        parentColumns = "projectId",
         childColumns = "project_id",
         onDelete = ForeignKey.CASCADE)
 })
@@ -22,6 +22,7 @@ public class Task {
      * The unique identifier of the task
      */
     @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "taskId")
     private long id;
 
     /**
@@ -33,8 +34,7 @@ public class Task {
     /**
      * The name of the task
      */
-    // Suppress warning because setName is called in constructor
-    @ColumnInfo(name = "name")
+    @ColumnInfo(name = "taskName")
     private String name;
 
     /**
@@ -151,14 +151,5 @@ public class Task {
         if (getProjectId() != task.getProjectId()) return false;
         if (getCreationTimestamp() != task.getCreationTimestamp()) return false;
         return getName().equals(task.getName());
-    }
-
-    @Override
-    public int hashCode() {
-        int result = (int) (getId() ^ (getId() >>> 32));
-        result = 31 * result + (int) (getProjectId() ^ (getProjectId() >>> 32));
-        result = 31 * result + getName().hashCode();
-        result = 31 * result + (int) (getCreationTimestamp() ^ (getCreationTimestamp() >>> 32));
-        return result;
     }
 }

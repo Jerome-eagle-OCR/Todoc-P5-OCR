@@ -71,7 +71,7 @@ public class TaskDaoTest {
     @Test
     public void getAllTaskWithProjectWhenNoTaskInserted() throws InterruptedException {
         //Given : we have three projects in database but no task inserted yet
-        insertTestProjects(); //We need project(s) to have tasks
+        this.insertTestProjects(); //We need project(s) to have tasks
 
         //When : we get the list of tasks
         List<TaskWithProject> actualTaskWithProjectList =
@@ -84,7 +84,7 @@ public class TaskDaoTest {
     @Test
     public void getAllTaskWithProjectAZWhenNoTaskInserted() throws InterruptedException {
         //Given : we have three projects in database but no task inserted yet
-        insertTestProjects(); //We need project(s) to have tasks
+        this.insertTestProjects(); //We need project(s) to have tasks
 
         //When : we get the list of tasks
         List<TaskWithProject> actualTaskWithProjectList =
@@ -97,11 +97,11 @@ public class TaskDaoTest {
     @Test
     public void insertAndGetAllTaskWithProject() throws InterruptedException {
         //Given : we have three projects and we insert a task in each one
-        insertTestProjects(); //We need project(s) to have tasks
+        this.insertTestProjects(); //We need project(s) to have tasks
 
-        insertTestTasks();
+        this.insertTestTasks();
 
-        setTestTasksIds();
+        this.setTestTasksIds(); // We set ids for our test tasks as in database
 
         //When : we get the list of taskWithProject
         List<TaskWithProject> actualTaskWithProjectList =
@@ -123,11 +123,11 @@ public class TaskDaoTest {
     @Test
     public void insertAndGetAllTaskWithProjectAZ() throws InterruptedException {
         //Given : we have three projects and we insert a task in each one
-        insertTestProjects(); //We need project(s) to create tasks
+        this.insertTestProjects(); //We need project(s) to create tasks
 
-        insertTestTasks();
+        this.insertTestTasks();
 
-        setTestTasksIds();
+        this.setTestTasksIds(); // We set ids for our test tasks as in database
 
         //When : we get the list of taskWithProject
         List<TaskWithProject> actualTaskWithProjectList =
@@ -150,11 +150,11 @@ public class TaskDaoTest {
     public void insertAllThenUpdateOneAndGetAllTaskWithProject() throws InterruptedException {
         //Given : we have three projects, one task in each one and we update the secondly added task
         //        with the same id and changing the other attributes thru a new task
-        insertTestProjects(); //We need project(s) to create tasks
+        this.insertTestProjects(); //We need project(s) to create tasks
 
-        insertTestTasks();
+        this.insertTestTasks();
 
-        setTestTasksIds();
+        this.setTestTasksIds(); // We set ids for our test tasks as in database
 
         Task TASK_NEIGHBOUR_DETAILS_UPDATED = new Task(
                 TASK_NEIGHBOUR_DETAILS.getId(), //we get the id of the task we want to update
@@ -185,13 +185,13 @@ public class TaskDaoTest {
     public void insertAllThenUpdateOneAndGetAllTaskWithProjectAZ() throws InterruptedException {
         //Given : we have three projects, one task in each one and we update the secondly added task
         //        with the same id and changing the other attributes thru a new task
-        insertTestProjects(); //We need project(s) to create tasks
+        this.insertTestProjects(); //We need project(s) to create tasks
 
         db.projectDao().insert(PROJECT_ANDROID);
 
-        insertTestTasks();
+        this.insertTestTasks();
 
-        setTestTasksIds();
+        this.setTestTasksIds(); // We set ids for our test tasks as in database
 
         Task TASK_NEIGHBOUR_DETAILS_UPDATED = new Task(
                 TASK_NEIGHBOUR_DETAILS.getId(),
@@ -222,11 +222,11 @@ public class TaskDaoTest {
     @Test
     public void insertAllThenDeleteOneAndGetAllTaskWithProject() throws InterruptedException {
         //Given : we have three projects, we insert a task in each one and we delete the third one
-        insertTestProjects(); //We need project(s) to create tasks
+        this.insertTestProjects(); //We need project(s) to create tasks
 
-        insertTestTasks();
+        this.insertTestTasks();
 
-        setTestTasksIds();
+        this.setTestTasksIds(); // We set ids for our test tasks as in database
 
         //Deletion of thirdly inserted task
         taskDao.delete(TASK_CREATE_MEETING_APP);
@@ -249,11 +249,11 @@ public class TaskDaoTest {
     @Test
     public void insertAllThenDeleteOneAndGetAllTaskWithProjectAZ() throws InterruptedException {
         //Given : we have three projects, we insert a task in each one and we delete the third one
-        insertTestProjects(); //We need project(s) to create tasks
+        this.insertTestProjects(); //We need project(s) to create tasks
 
-        insertTestTasks();
+        this.insertTestTasks();
 
-        setTestTasksIds();
+        this.setTestTasksIds(); // We set ids for our test tasks as in database
 
         //Deletion of thirdly inserted task
         taskDao.delete(TASK_CREATE_MEETING_APP);
@@ -287,6 +287,8 @@ public class TaskDaoTest {
     }
 
     private void setTestTasksIds() {
+        // We set ids for our test tasks as in database after insertion to avoid interference
+        // with autogenerate
         TASK_MAKE_TESTS_PASS.setId(TASK_MAKE_TESTS_PASS_ID);
         TASK_NEIGHBOUR_DETAILS.setId(TASK_NEIGHBOUR_DETAILS_ID);
         TASK_CREATE_MEETING_APP.setId(TASK_CREATE_MEETING_APP_ID);

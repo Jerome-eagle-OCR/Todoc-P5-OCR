@@ -49,13 +49,4 @@ public class AddEditTaskDialogViewState {
         if (getPositiveBtnTxt() != that.getPositiveBtnTxt()) return false;
         return getDialogEditText().equals(that.getDialogEditText());
     }
-
-    @Override
-    public int hashCode() {
-        int result = getDialogTitle();
-        result = 31 * result + getDialogEditText().hashCode();
-        result = 31 * result + getProjectIndex();
-        result = 31 * result + getPositiveBtnTxt();
-        return result;
-    }
 }
