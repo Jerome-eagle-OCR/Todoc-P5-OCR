@@ -291,8 +291,8 @@ public class MainViewModelTest {
         underTestMainViewModel.createEditTask(testTask5, null, null);
         //Then :
         //No task should be created nor edited
-        verify(mockTaskRepository, times(0)).insert(testTask5.getTask());
-        verify(mockTaskRepository, times(0)).update(testTask5.getTask());
+        verify(mockTaskRepository, times(0)).insert(any(Task.class));
+        verify(mockTaskRepository, times(0)).update(any(Task.class));
         //Task name empty text error boolean should be false
         assert (!underTestMainViewModel.getEmptyTaskNameError());
         //Snackbar message should be empty
