@@ -19,6 +19,7 @@ import java.util.concurrent.Executors;
 
 @Database(entities = {Project.class, Task.class}, exportSchema = false, version = 1)
 public abstract class TodocDatabase extends RoomDatabase {
+
     public static final String DB_NAME = "todoc_database";
     private static TodocDatabase instance;
 

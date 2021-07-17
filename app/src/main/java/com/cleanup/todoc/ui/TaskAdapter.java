@@ -33,7 +33,7 @@ public class TaskAdapter extends ListAdapter<TaskWithProject, TaskAdapter.TaskVi
     /**
      * Instantiates a new TaskAdapter.
      */
-    TaskAdapter(@NonNull final EditTaskListener editTaskListener) {
+    protected TaskAdapter(@NonNull final EditTaskListener editTaskListener) {
         super(DIFF_CALLBACK);
         this.editTaskListener = editTaskListener;
     }
@@ -94,7 +94,7 @@ public class TaskAdapter extends ListAdapter<TaskWithProject, TaskAdapter.TaskVi
      *
      * @author Gaëtan HERFRAY / Modified by Jérôme Rigault
      */
-    class TaskViewHolder extends RecyclerView.ViewHolder {
+    static class TaskViewHolder extends RecyclerView.ViewHolder {
         /**
          * The circle icon showing the color of the project
          */

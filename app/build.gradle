@@ -55,74 +55,30 @@ dependencies {
     implementation 'com.google.android.material:material:1.4.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
 
-    //room
+    // Room
     def room_version = "2.3.0"
     implementation "androidx.room:room-runtime:$room_version"
     annotationProcessor "androidx.room:room-compiler:$room_version"
-    // optional - RxJava2 support for Room
-    //implementation "androidx.room:room-rxjava2:$room_version"
-    // optional - RxJava3 support for Room
-    //implementation "androidx.room:room-rxjava3:$room_version"
-    // optional - Guava support for Room, including Optional and ListenableFuture
-    //implementation "androidx.room:room-guava:$room_version"
-    // optional - Test helpers
-    // testImplementation "androidx.room:room-testing:$room_version"
 
+    // Annotations
     implementation 'org.jetbrains:annotations:21.0.1'
 
-    // Testing-only dependencies
-    // Required -- JUnit 4 framework
-    testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'junit:junit:4.13.2'
-    // Optional -- Robolectric environment
-    testImplementation 'androidx.test:core:1.4.0'
-    // Optional -- Mockito framework
+    //--------------------------------------------------------------------
+    // For testing
+    //--------------------------------------------------------------------
+    // Mockito
     testImplementation 'org.mockito:mockito-core:3.11.2'
     androidTestImplementation "org.mockito:mockito-android:3.11.2"
-
-    //Orchestrator to have app cleaned between tests
+    // Orchestrator to have app cleaned between tests
     androidTestUtil 'androidx.test:orchestrator:1.4.0'
-
-    //TODO: clean all unneeded dependencies
+    // Executor
     testImplementation 'androidx.arch.core:core-testing:2.1.0'
-    testImplementation 'androidx.test.ext:junit:1.1.3'
-    testImplementation 'androidx.test:runner:1.4.0'
-    testImplementation 'androidx.test:rules:1.4.0'
-    testImplementation 'org.hamcrest:hamcrest:2.2'
-    testImplementation 'org.hamcrest:hamcrest-library:2.2'
     androidTestImplementation 'androidx.arch.core:core-testing:2.1.0'
-    androidTestImplementation 'androidx.test:core:1.4.0'
+    // Junit4
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
-    androidTestImplementation 'androidx.test:runner:1.4.0'
-    androidTestImplementation 'androidx.test:rules:1.4.0'
-    androidTestImplementation 'org.hamcrest:hamcrest:2.2'
-    androidTestImplementation 'org.hamcrest:hamcrest-library:2.2'
+    // Espresso
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
-    testImplementation 'androidx.test.espresso:espresso-idling-resource:3.4.0'
-}
-
-// open JaCoCo report after generation
-def openReport(htmlOutDir) {
-    final reportPath = "$htmlOutDir\\index.html"
-
-    println "HTML Report: $reportPath"
-
-    def os = org.gradle.internal.os.OperatingSystem.current()
-    if (os.isWindows()) {
-        exec { commandLine 'cmd', '/c', "start $reportPath" }
-    } else if (os.isMacOsX()) {
-        exec { commandLine 'open', "$reportPath" }
-    } else if (os.isLinux()) {
-        try {
-            exec { commandLine 'xdg-open', "$reportPath" }
-        } catch (Exception ignored) {
-            if (localProperties.containsKey("linux-html-cmd")) {
-                exec { commandLine properties.get("linux-html-cmd"), "$reportPath" }
-            } else {
-                println "'linux-html-cmd' property could not be found in 'local.properties'"
-            }
-        }
-    }
+    //--------------------------------------------------------------------
 }
 
 // JaCoCo stuff
@@ -153,5 +109,29 @@ android.applicationVariants.all { variant ->
         getSourceDirectories().setFrom(files(android.sourceSets.main.java.srcDirs))
         getExecutionData().setFrom(files("${buildDir}/jacoco/test${variantName}UnitTest.exec"))
         getClassDirectories().setFrom(fileTree(dir: variant.javaCompiler.destinationDir, includes: filesToAnalyze))
+    }
+}
+
+// Open JaCoCo report after generation
+def openReport(htmlOutDir) {
+    final reportPath = "$htmlOutDir\\index.html"
+
+    println "HTML Report: $reportPath"
+
+    def os = org.gradle.internal.os.OperatingSystem.current()
+    if (os.isWindows()) {
+        exec { commandLine 'cmd', '/c', "start $reportPath" }
+    } else if (os.isMacOsX()) {
+        exec { commandLine 'open', "$reportPath" }
+    } else if (os.isLinux()) {
+        try {
+            exec { commandLine 'xdg-open', "$reportPath" }
+        } catch (Exception ignored) {
+            if (localProperties.containsKey("linux-html-cmd")) {
+                exec { commandLine properties.get("linux-html-cmd"), "$reportPath" }
+            } else {
+                println "'linux-html-cmd' property could not be found in 'local.properties'"
+            }
+        }
     }
 }

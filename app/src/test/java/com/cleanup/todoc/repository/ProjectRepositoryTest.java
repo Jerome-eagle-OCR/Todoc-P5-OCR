@@ -1,13 +1,10 @@
 package com.cleanup.todoc.repository;
 
-import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
-
 import com.cleanup.todoc.model.dao.ProjectDao;
 import com.cleanup.todoc.model.entity.Project;
 import com.cleanup.todoc.model.repository.ProjectRepository;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -24,8 +21,6 @@ public class ProjectRepositoryTest {
 
     private final Project PROJECT_MOCKITO = new Project("Projet Mockito", 0);
 
-    @Rule
-    public InstantTaskExecutorRule instantTaskExecutorRule = new InstantTaskExecutorRule();
 
     @Mock
     ProjectDao mockProjectDao;

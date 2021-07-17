@@ -30,8 +30,6 @@ import com.cleanup.todoc.model.entity.relation.TaskWithProject;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
-import java.util.List;
-
 import static com.cleanup.todoc.Utils.SortMethod;
 
 /**
@@ -46,11 +44,6 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.EditT
      * List of all projects available in the application
      */
     private Project[] mProjects;
-
-    /**
-     * List of all current tasks, including bound project, of the application
-     */
-    private List<TaskWithProject> mTasks;
 
     /**
      * Current sorting method (valorized by viewmodel livedata)
@@ -125,10 +118,7 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.EditT
         setItemTouchHelper(taskRecyclerview, adapter);
 
         // Set the list and keep it up to date
-        viewModel.getSortedList().observe(this, tasks -> {
-            mTasks = tasks;
-            updateTasks();
-        });
+        viewModel.getSortedList().observe(this, adapter::submitList);
 
         // Scroll list to top when a sorting is selected
         viewModel.getSortMethod().observe(this, sortMethod -> {
@@ -187,13 +177,6 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.EditT
         viewModel.setSorting(sortMethod);
 
         return super.onOptionsItemSelected(item);
-    }
-
-    /**
-     * Updates the list of tasks in the UI
-     */
-    private void updateTasks() {
-        adapter.submitList(mTasks); // ListAdapter method
     }
 
     /**
