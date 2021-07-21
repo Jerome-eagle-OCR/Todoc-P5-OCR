@@ -24,6 +24,7 @@
         android:layout_height="match_parent"
         android:clipToPadding="false"
         android:paddingBottom="88dp"
+        android:layoutAnimation="@anim/layout_animation"
         tools:itemCount="5"
         android:background="@color/ripple_color"
         tools:listitem="@layout/item_task" />
